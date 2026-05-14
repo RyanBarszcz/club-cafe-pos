@@ -1,4 +1,5 @@
 import { CartItem } from "../../lib/types";
+import { MdCreditCard, MdAccountBalance } from "react-icons/md";
 
 type KioskCartProps = {
     cartItems: CartItem[];
@@ -69,7 +70,17 @@ export default function KioskCart({
                 </div>
             </div>
 
-            <button className="pay-button">Charge to Account</button>
+            <div className="payment-actions">
+                <button className="pay-button primary">
+                    <MdAccountBalance />
+                    Charge to Account
+                </button>
+
+                <button className="pay-button secondary">
+                    <MdCreditCard />
+                    Pay by Card
+                </button>
+            </div>
         </aside>
     );
 }

@@ -263,15 +263,43 @@ input {
   font-weight: 700;
 }
 
+.payment-actions {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
 .pay-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   border: none;
-  border-radius: 8px;
-  background: var(--primary-blue);
-  color: var(--white);
-  padding: 16px;
+  border-radius: 10px;
+  padding: 18px;
   font-size: 18px;
   font-weight: 700;
   cursor: pointer;
+  transition: transform 0.15s ease,
+              opacity 0.15s ease;
+}
+
+.pay-button:hover {
+  transform: translateY(-2px);
+}
+
+.pay-button svg {
+  font-size: 24px;
+}
+
+.pay-button.primary {
+  background: var(--primary-blue);
+  color: var(--white);
+}
+
+.pay-button.secondary {
+  background: var(--soft-gray);
+  color: var(--dark-navy);
 }
 
 .staff-link {
