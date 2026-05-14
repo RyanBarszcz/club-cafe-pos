@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 import { mockProducts } from "../lib/mockProducts";
 import CategoryTabs from "../components/kiosk/CategoryTabs";
 import KioskProductGrid from "../components/kiosk/KioskProductGrid";
@@ -18,15 +18,24 @@ const allCategories = [
 ];
 
 export default function Home() {
+  const { isLoaded, isSignedIn, user } = useUser();
+
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [cartItems, setCartItems] = useState([]);
-  const [isEmployee, setIsEmployee] = useState(false);
 
-  useEffect(() => {
-    const savedRole = localStorage.getItem("userRole");
-    setIsEmployee(savedRole === "employee" || savedRole === "admin");
-  }, []);
+  const role = useMemo(() => {
+    if (!isLoaded || !isSignedIn || !user) return "guest";
+
+    const metadataRole = user.publicMetadata?.role;
+
+    if (metadataRole === "admin") return "admin";
+    if (metadataRole === "employee") return "employee";
+
+    return "guest";
+  }, [isLoaded, isSignedIn, user]);
+
+  const isEmployee = role === "employee" || role === "admin";
 
   useEffect(() => {
     localStorage.setItem("currentCart", JSON.stringify(cartItems));
@@ -42,7 +51,6 @@ export default function Home() {
   const categories = useMemo(() => {
     return allCategories.filter((category) => {
       if (category === "All") return true;
-
       return visibleProducts.some((product) => product.category === category);
     });
   }, [visibleProducts]);
@@ -100,22 +108,9 @@ export default function Home() {
     );
   }
 
-  function handleDemoEmployeeLogin() {
-    localStorage.setItem("userRole", "employee");
-    setIsEmployee(true);
-  }
-
-  function handleDemoLogout() {
-    localStorage.removeItem("userRole");
-    setIsEmployee(false);
-    setSelectedCategory("All");
-  }
-
   return (
     <main className="kiosk-page">
-      <section
-        className="kiosk-shell"
-      >
+      <section className="kiosk-shell">
         <div className="kiosk-main">
           <header className="kiosk-topbar">
             <input
@@ -138,16 +133,6 @@ export default function Home() {
             products={filteredProducts}
             onAddToCart={handleAddToCart}
           />
-
-          {isEmployee ? (
-            <Link href="/dashboard" className="staff-link">
-              Admin dashboard
-            </Link>
-          ) : (
-            <button className="staff-link staff-link-button" onClick={handleDemoEmployeeLogin}>
-              Staff sign in
-            </button>
-          )}
         </div>
 
         <KioskCart

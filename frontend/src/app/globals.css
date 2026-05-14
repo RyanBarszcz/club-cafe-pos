@@ -906,3 +906,63 @@ input {
   margin: 0;
   font-size: 28px;
 }
+
+.staff-login-page {
+  min-height: 100vh;
+
+  display: grid;
+  place-items: center;
+
+  background: var(--background-gray);
+
+  padding: 24px;
+}
+
+.staff-login-card {
+  width: min(520px, 100%);
+
+  border-radius: 22px;
+
+  background: var(--white);
+
+  padding: 36px;
+
+  box-shadow: 0 24px 80px rgba(8, 1, 51, 0.12);
+}
+
+.staff-login-header {
+  margin-bottom: 28px;
+}
+
+.staff-login-header h1 {
+  margin: 0 0 10px;
+
+  color: var(--dark-navy);
+
+  font-size: 40px;
+}
+
+.staff-login-header p {
+  margin: 0;
+
+  color: var(--muted-gray);
+
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.logo-login-button {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-login-button img {
+  object-fit: cover;
+  border-radius: 20px;
+}

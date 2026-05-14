@@ -1,5 +1,9 @@
+import { useEffect, useState } from "react";
 import { CartItem } from "../../lib/types";
 import Link from "next/link";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useClerk } from "@clerk/nextjs";
 
 type KioskCartProps = {
     cartItems: CartItem[];
@@ -20,19 +24,72 @@ export default function KioskCart({
         (sum, item) => sum + item.price * item.quantity,
         0
     );
+    const router = useRouter();
+    const { signOut } = useClerk();
 
     const tax = subtotal * 0.06;
     const total = subtotal + tax;
+
+    const [tapCount, setTapCount] = useState(0);
+    const [employeeTapCount, setEmployeeTapCount] = useState(0);
+
+    function handleLogoTap() {
+        setTapCount((prev) => prev + 1);
+    }
+
+    function handleEmployeeTap() {
+        setEmployeeTapCount((prev) => prev + 1);
+    }
+
+    useEffect(() => {
+        if (tapCount >= 3) {
+            router.push("/staff-login");
+        }
+
+        const timeout = setTimeout(() => {
+            setTapCount(0);
+        }, 1200);
+
+        return () => clearTimeout(timeout);
+    }, [tapCount, router]);
+
+    useEffect(() => {
+        if (employeeTapCount >= 3) {
+            signOut(() => {
+                router.push("/");
+            });
+        }
+
+        const timeout = setTimeout(() => {
+            setEmployeeTapCount(0);
+        }, 1200);
+
+        return () => clearTimeout(timeout);
+    }, [employeeTapCount, signOut, router]);
 
     return (
         <aside className="cart-panel">
             <div className="cart-header">
                 <h2>Order Details</h2>
 
-                {isEmployee && (
-                    <div className="employee-badge">
+                {isEmployee ? (
+                    <div className="employee-badge"
+                        onClick={handleEmployeeTap}>
                         EMPLOYEE
                     </div>
+                ) : (
+                    <button
+                        className="logo-login-button"
+                        onClick={handleLogoTap}
+                        aria-label="Staff login access"
+                    >
+                        <Image
+                            src="/libertylogo.png"
+                            alt="Liberty Cafe"
+                            width={64}
+                            height={64}
+                        />
+                    </button>
                 )}
             </div>
 
