@@ -1,0 +1,275 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import {
+    MdAccountBalance,
+    MdCreditCard,
+    MdAttachMoney,
+} from "react-icons/md";
+
+import { CartItem } from "../../lib/types";
+
+export default function CheckoutPage() {
+    const [cartItems, setCartItems] = useState<CartItem[]>([]);
+    const [isEmployee, setIsEmployee] = useState(false);
+    const [discountPercent, setDiscountPercent] = useState(0);
+    const [customDiscount, setCustomDiscount] = useState(0);
+    const [isCustomDiscountModalOpen, setIsCustomDiscountModalOpen] =
+        useState(false);
+    const [isCustomDiscountActive, setIsCustomDiscountActive] =
+        useState(false);
+
+
+    useEffect(() => {
+        const savedCart = localStorage.getItem("currentCart");
+        const savedRole = localStorage.getItem("userRole");
+
+        if (savedCart) {
+            setCartItems(JSON.parse(savedCart));
+        }
+
+        setIsEmployee(
+            savedRole === "employee" || savedRole === "admin"
+        );
+    }, []);
+
+    const subtotal = useMemo(() => {
+        return cartItems.reduce((sum, item) => {
+            return sum + item.price * item.quantity;
+        }, 0);
+    }, [cartItems]);
+
+    const compedAmount = useMemo(() => {
+        return cartItems.reduce((sum, item) => {
+            if (!item.isComped) return sum;
+            return sum + item.price * item.quantity;
+        }, 0);
+    }, [cartItems]);
+
+    const discountableSubtotal = subtotal - compedAmount;
+
+    const percentDiscountAmount =
+        discountableSubtotal * (discountPercent / 100);
+
+    const totalDiscount = Math.min(
+        subtotal,
+        compedAmount + percentDiscountAmount + customDiscount
+    );
+
+    const taxableSubtotal = subtotal - totalDiscount;
+
+    const tax = taxableSubtotal * 0.06;
+    const total = taxableSubtotal + tax;
+
+    function handleToggleComp(id: string) {
+        setCartItems((currentItems) =>
+            currentItems.map((item) =>
+                item.id === id
+                    ? { ...item, isComped: !item.isComped }
+                    : item
+            )
+        );
+    }
+
+    return (
+        <main className="checkout-page">
+            <section className="checkout-shell">
+                <div className="checkout-cart-panel">
+                    <div className="checkout-header">
+                        <div>
+                            <Link href="/" className="back-link">
+                                ← Back to items
+                            </Link>
+
+                            <h1>Review Order</h1>
+                        </div>
+                    </div>
+
+                    <div className="checkout-items">
+                        {cartItems.map((item) => (
+                            <div className="checkout-item" key={item.id}>
+                                <div className="checkout-item-image">
+                                    <span>{item.name.charAt(0)}</span>
+                                </div>
+
+                                <div>
+                                    <h3>{item.name}</h3>
+
+                                    <p>
+                                        {item.quantity}x • $
+                                        {item.price.toFixed(2)} each
+                                    </p>
+                                </div>
+
+                                <div className="checkout-item-actions">
+                                    <strong
+                                        className={item.isComped ? "comped-price" : ""}
+                                    >
+                                        {item.isComped
+                                            ? "COMPED"
+                                            : `$${(item.price * item.quantity).toFixed(2)}`}
+                                    </strong>
+
+                                    {isEmployee && (
+                                        <button
+                                            className={`comp-button ${item.isComped ? "active" : ""
+                                                }`}
+                                            onClick={() => handleToggleComp(item.id)}
+                                        >
+                                            {item.isComped ? "Undo Comp" : "Comp Item"}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <aside className="checkout-payment-panel">
+                    <div className="payment-summary-header">
+                        <h2>Payment Summary</h2>
+
+                        {isEmployee && (
+                            <div className="employee-badge">
+                                EMPLOYEE
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="checkout-summary">
+                        <div>
+                            <span>Subtotal</span>
+                            <strong>${subtotal.toFixed(2)}</strong>
+                        </div>
+
+                        {isEmployee && totalDiscount > 0 && (
+                            <>
+                                <div>
+                                    <span>Discounts</span>
+                                    <strong>- ${totalDiscount.toFixed(2)}</strong>
+                                </div>
+                            </>
+                        )}
+
+                        <div>
+                            <span>Total sales tax</span>
+                            <strong>${tax.toFixed(2)}</strong>
+                        </div>
+
+                        <div className="checkout-total-row">
+                            <span>Total</span>
+                            <strong>${total.toFixed(2)}</strong>
+                        </div>
+                    </div>
+
+                    <div className="checkout-payment-options">
+                        <button className="checkout-pay-option primary">
+                            <MdAccountBalance />
+                            Charge to Account
+                        </button>
+
+                        <button className="checkout-pay-option secondary">
+                            <MdCreditCard />
+                            Pay by Card
+                        </button>
+                    </div>
+
+                    {isEmployee && (
+                        <div className="employee-checkout-tools">
+                            {isEmployee && (
+                                <div className="checkout-discounts">
+                                    <p>Discount</p>
+
+                                    <div className="checkout-discount-buttons">
+                                        <button
+                                            className={discountPercent === 0 ? "active" : ""}
+                                            onClick={() => setDiscountPercent(0)}
+                                        >
+                                            None
+                                        </button>
+
+                                        <button
+                                            className={discountPercent === 10 ? "active" : ""}
+                                            onClick={() => setDiscountPercent(10)}
+                                        >
+                                            10%
+                                        </button>
+
+                                        <button
+                                            className={discountPercent === 15 ? "active" : ""}
+                                            onClick={() => setDiscountPercent(15)}
+                                        >
+                                            15%
+                                        </button>
+
+                                        <button
+                                            className={discountPercent === 20 ? "active" : ""}
+                                            onClick={() => setDiscountPercent(20)}
+                                        >
+                                            20%
+                                        </button>
+                                        <button
+                                            className={isCustomDiscountActive ? "active" : ""}
+                                            onClick={() => {
+                                                setDiscountPercent(0);
+                                                setIsCustomDiscountActive(true);
+                                                setIsCustomDiscountModalOpen(true);
+                                            }}
+                                        >
+                                            Custom
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </aside>
+            </section>
+            {isCustomDiscountModalOpen && (
+                <div className="modal-backdrop">
+                    <div className="custom-discount-modal">
+                        <h2>Custom Discount</h2>
+
+                        <label>
+                            Discount amount ($)
+                            <input
+                                type="number"
+                                min="0.00"
+                                step="0.01"
+                                value={customDiscount}
+                                onChange={(event) =>
+                                    setCustomDiscount(Number(event.target.value))
+                                }
+                                placeholder="$0.00"
+                                autoFocus
+                            />
+                        </label>
+
+                        <div className="modal-actions">
+                            <button
+                                className="modal-secondary-button"
+                                onClick={() => {
+                                    setCustomDiscount(0);
+                                    setIsCustomDiscountActive(false);
+                                    setIsCustomDiscountModalOpen(false);
+                                }}
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                className="modal-primary-button"
+                                onClick={() => {
+                                    setIsCustomDiscountModalOpen(false);
+                                }}
+                            >
+                                Apply Discount
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </main>
+    );
+}

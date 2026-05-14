@@ -1,4 +1,5 @@
 import { CartItem } from "../../lib/types";
+import Link from "next/link";
 
 type KioskCartProps = {
     cartItems: CartItem[];
@@ -90,7 +91,9 @@ export default function KioskCart({
                 <strong>${total.toFixed(2)}</strong>
             </div>
 
-            <button className="checkout-button">Pay Now</button>
+            <Link href="/checkout" className="checkout-button">
+                Pay Now
+            </Link>
         </aside>
     );
 }

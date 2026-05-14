@@ -114,7 +114,7 @@ export default function Home() {
   return (
     <main className="kiosk-page">
       <section
-        className={`kiosk-shell ${isEmployee ? "employee-shell" : ""}`}
+        className="kiosk-shell"
       >
         <div className="kiosk-main">
           <header className="kiosk-topbar">

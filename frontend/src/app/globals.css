@@ -505,4 +505,404 @@ input {
   font-size: 18px;
   font-weight: 700;
   cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+}
+
+.checkout-page {
+  min-height: 100vh;
+  padding: 32px;
+  background: var(--background-gray);
+}
+
+.checkout-shell {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  max-width: 1440px;
+  height: calc(100vh - 64px);
+  margin: 0 auto;
+  background: var(--soft-gray);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.checkout-cart-panel {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.checkout-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-shrink: 0;
+  margin-bottom: 28px;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: var(--muted-gray);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.checkout-header h1 {
+  margin: 0;
+  font-size: 36px;
+  color: var(--dark-navy);
+}
+
+.checkout-items {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.checkout-item {
+  display: grid;
+  grid-template-columns: 96px 1fr auto;
+  align-items: center;
+  gap: 22px;
+  margin-bottom: 18px;
+  padding: 18px;
+  border-radius: 14px;
+  background: var(--white);
+}
+
+.checkout-item-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.checkout-item-image {
+  width: 96px;
+  height: 96px;
+  border-radius: 12px;
+  background: #e3e3e3;
+  display: grid;
+  place-items: center;
+}
+
+.checkout-item-image span {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--primary-blue);
+  color: var(--white);
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.checkout-item h3 {
+  margin: 0 0 8px;
+  font-size: 22px;
+}
+
+.checkout-item p {
+  margin: 0;
+  color: var(--muted-gray);
+  font-weight: 600;
+}
+
+.checkout-item strong {
+  color: var(--primary-blue);
+  font-size: 22px;
+}
+
+.comp-button {
+  border: none;
+  border-radius: 999px;
+
+  background: rgba(2, 119, 250, 0.1);
+  color: var(--primary-blue);
+
+  padding: 8px 14px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.comp-button.active {
+  background: rgba(239, 68, 68, 0.14);
+  color: #dc2626;
+}
+
+.comped-price {
+  color: #dc2626 !important;
+}
+
+.checkout-payment-panel {
+  background: var(--white);
+  padding: 32px 26px;
+  display: flex;
+  flex-direction: column;
+}
+
+.checkout-payment-panel h2 {
+  margin: 0 0 28px;
+  font-size: 28px;
+}
+
+.checkout-summary {
+  border-top: 1px dashed #e5e5e5;
+  padding-top: 22px;
+}
+
+.checkout-summary div {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.checkout-summary span {
+  color: var(--muted-gray);
+  font-weight: 600;
+}
+
+.checkout-summary strong {
+  color: var(--primary-blue);
+}
+
+.checkout-total-row {
+  border-top: 1px solid #eeeeee;
+  padding-top: 22px;
+  margin-top: 8px;
+  font-size: 24px;
+}
+
+.checkout-payment-options {
+  display: grid;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.checkout-pay-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  border: none;
+  border-radius: 12px;
+  padding: 18px;
+
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.checkout-pay-option svg {
+  font-size: 24px;
+}
+
+.checkout-pay-option.primary {
+  background: var(--primary-blue);
+  color: var(--white);
+}
+
+.checkout-pay-option.secondary {
+  background: #22c55e;
+  color: white
+}
+
+.employee-checkout-tools {
+  display: grid;
+  padding-top: 22px;
+}
+
+.employee-checkout-tools button {
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  background: rgba(2, 119, 250, 0.1);
+  color: var(--primary-blue);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.checkout-discounts {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px dashed #e5e5e5;
+}
+
+.checkout-discounts p {
+  margin: 0 0 12px;
+  font-weight: 800;
+}
+
+.checkout-discount-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.checkout-discount-buttons button {
+  border: none;
+  border-radius: 999px;
+  background: var(--soft-gray);
+  color: var(--dark-navy);
+  padding: 20px 12px;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.checkout-discount-buttons button:hover {
+  background: var(--primary-blue);
+  color: var(--white);
+}
+
+.checkout-discount-buttons button.active {
+  background: var(--primary-blue);
+  color: var(--white);
+}
+
+.custom-discount-field {
+  display: grid;
+  gap: 8px;
+
+  margin-top: 14px;
+
+  color: var(--dark-navy);
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.custom-discount-field input {
+  width: 100%;
+
+  border: none;
+  border-radius: 10px;
+
+  background: var(--soft-gray);
+
+  padding: 14px 16px;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  color: var(--dark-navy);
+
+  outline: none;
+}
+
+.custom-discount-field input:focus {
+  box-shadow: 0 0 0 2px rgba(2, 119, 250, 0.2);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+
+  display: grid;
+  place-items: center;
+
+  background: rgba(8, 1, 51, 0.42);
+  backdrop-filter: blur(6px);
+}
+
+.custom-discount-modal {
+  width: min(420px, calc(100vw - 40px));
+
+  border-radius: 18px;
+  background: var(--white);
+
+  padding: 28px;
+
+  box-shadow: 0 24px 80px rgba(8, 1, 51, 0.25);
+}
+
+.custom-discount-modal h2 {
+  margin: 0 0 20px;
+
+  color: var(--dark-navy);
+
+  font-size: 28px;
+}
+
+.custom-discount-modal label {
+  display: grid;
+  gap: 10px;
+
+  color: var(--dark-navy);
+
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.custom-discount-modal input {
+  border: none;
+  border-radius: 12px;
+
+  background: var(--soft-gray);
+
+  padding: 16px;
+
+  color: var(--dark-navy);
+
+  font-size: 24px;
+  font-weight: 800;
+
+  outline: none;
+}
+
+.custom-discount-modal input:focus {
+  box-shadow: 0 0 0 3px rgba(2, 119, 250, 0.18);
+}
+
+.modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  margin-top: 24px;
+}
+
+.modal-actions button {
+  border: none;
+  border-radius: 12px;
+
+  padding: 14px;
+
+  font-size: 15px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.modal-secondary-button {
+  background: var(--soft-gray);
+  color: var(--dark-navy);
+}
+
+.modal-primary-button {
+  background: var(--primary-blue);
+  color: var(--white);
+}
+
+.payment-summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 28px;
+}
+
+.payment-summary-header h2 {
+  margin: 0;
+  font-size: 28px;
 }
