@@ -1,11 +1,11 @@
 import { CartItem } from "../../lib/types";
-import { MdCreditCard, MdAccountBalance } from "react-icons/md";
 
 type KioskCartProps = {
     cartItems: CartItem[];
     onIncreaseItem: (id: string) => void;
     onDecreaseItem: (id: string) => void;
     onRemoveItem: (id: string) => void;
+    isEmployee?: boolean;
 };
 
 export default function KioskCart({
@@ -13,6 +13,7 @@ export default function KioskCart({
     onIncreaseItem,
     onDecreaseItem,
     onRemoveItem,
+    isEmployee,
 }: KioskCartProps) {
     const subtotal = cartItems.reduce(
         (sum, item) => sum + item.price * item.quantity,
@@ -24,7 +25,15 @@ export default function KioskCart({
 
     return (
         <aside className="cart-panel">
-            <h2>Order Details</h2>
+            <div className="cart-header">
+                <h2>Order Details</h2>
+
+                {isEmployee && (
+                    <div className="employee-badge">
+                        EMPLOYEE
+                    </div>
+                )}
+            </div>
 
             <div className="cart-items">
                 {cartItems.length === 0 ? (
@@ -32,22 +41,31 @@ export default function KioskCart({
                 ) : (
                     cartItems.map((item) => (
                         <div className="cart-item" key={item.id}>
-                            <button
-                                className="remove-cart-item"
-                                onClick={() => onRemoveItem(item.id)}
-                                aria-label={`Remove ${item.name}`}
-                            >
-                                ×
-                            </button>
+                            <div className="cart-item-image">
+                                <span>{item.name.charAt(0)}</span>
+                            </div>
 
-                            <div className="cart-item-info">
-                                <h3>{item.name}</h3>
-                                <strong>${(item.price * item.quantity).toFixed(2)}</strong>
+                            <div className="cart-item-content">
+                                <div className="cart-item-top">
+                                    <h3>{item.name}</h3>
 
-                                <div className="quantity-controls">
-                                    <button onClick={() => onDecreaseItem(item.id)}>-</button>
-                                    <span>{item.quantity}</span>
-                                    <button onClick={() => onIncreaseItem(item.id)}>+</button>
+                                    <button
+                                        className="remove-cart-item"
+                                        onClick={() => onRemoveItem(item.id)}
+                                        aria-label={`Remove ${item.name}`}
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+
+                                <div className="cart-item-bottom">
+                                    <div className="quantity-controls">
+                                        <button onClick={() => onDecreaseItem(item.id)}>-</button>
+                                        <span>{item.quantity}x</span>
+                                        <button onClick={() => onIncreaseItem(item.id)}>+</button>
+                                    </div>
+
+                                    <strong>${(item.price * item.quantity).toFixed(2)}</strong>
                                 </div>
                             </div>
                         </div>
@@ -55,32 +73,24 @@ export default function KioskCart({
                 )}
             </div>
 
-            <div className="cart-totals">
+            <div className="cart-summary">
                 <div>
                     <span>Subtotal</span>
                     <strong>${subtotal.toFixed(2)}</strong>
                 </div>
+
                 <div>
-                    <span>Tax</span>
+                    <span>Total sales tax</span>
                     <strong>${tax.toFixed(2)}</strong>
                 </div>
-                <div className="total-row">
-                    <span>Total</span>
-                    <strong>${total.toFixed(2)}</strong>
-                </div>
             </div>
 
-            <div className="payment-actions">
-                <button className="pay-button primary">
-                    <MdAccountBalance />
-                    Charge to Account
-                </button>
-
-                <button className="pay-button secondary">
-                    <MdCreditCard />
-                    Pay by Card
-                </button>
+            <div className="cart-total">
+                <span>Total</span>
+                <strong>${total.toFixed(2)}</strong>
             </div>
+
+            <button className="checkout-button">Pay Now</button>
         </aside>
     );
 }
