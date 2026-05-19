@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
     MdAccountBalance,
     MdCreditCard,
-    MdAttachMoney,
 } from "react-icons/md";
 
 import { CartItem } from "../../lib/types";
