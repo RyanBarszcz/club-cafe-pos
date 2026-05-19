@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+}
+
+enum ProductCategory {
+  DRINKS
+  SNACKS
+  PROTEIN
+  HOT_FOOD
+  GRAB_AND_GO
+  MERCH
+}
+
+enum TransactionMode {
+  KIOSK
+  STAFF
+}
+
+enum PaymentMethod {
+  MEMBER_ACCOUNT
+  CARD
+  CASH
+}
+
+enum TransactionStatus {
+  COMPLETED
+  VOIDED
+  REFUNDED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  name      String?
+  email     String   @unique
+  role      UserRole @default(STAFF)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions Transaction[]
+
+  @@map("users")
+}
+
+model Product {
+  id                 String          @id @default(cuid())
+  name               String
+  category           ProductCategory
+  priceCents         Int
+  description        String?
+  imageUrl           String?
+  isHotFood          Boolean         @default(false)
+  isSelfServeEnabled Boolean         @default(true)
+  inventoryCount     Int            @default(0)
+  lowStockThreshold  Int            @default(5)
+  active             Boolean         @default(true)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  transactionItems TransactionItem[]
+
+  @@map("products")
+}
+
+model Transaction {
+  id                 String            @id @default(cuid())
+  externalMemberId   String?
+  memberNameSnapshot String?
+
+  staffUserId        String?
+  mode               TransactionMode
+  paymentMethod      PaymentMethod
+  subtotalCents      Int
+  taxCents           Int
+  totalCents         Int
+  status             TransactionStatus @default(COMPLETED)
+  createdAt          DateTime          @default(now())
+
+  staffUser User?             @relation(fields: [staffUserId], references: [id])
+  items     TransactionItem[]
+
+  @@map("transactions")
+}
+
+model TransactionItem {
+  id                    String @id @default(cuid())
+  transactionId          String
+  productId              String?
+  productNameSnapshot    String
+  unitPriceCentsSnapshot Int
+  quantity               Int
+  lineTotalCents         Int
+
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  product     Product?    @relation(fields: [productId], references: [id])
+
+  @@map("transaction_items")
+}
