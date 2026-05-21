@@ -1,97 +1,51 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { fetchAdminProducts, deleteProduct } from "../../lib/api";
 import ProductStatusBadges from "./ProductStatusBadges";
+import EditProductModal from "./EditProductModal";
 
-const mockProducts = [
-    {
-        id: 1,
-        name: "Protein Shake",
-        category: "Drinks",
-        price: 8.99,
-        inventory: 12,
-        isHotFood: false,
-        selfServe: true,
-    },
-    {
-        id: 2,
-        name: "Chicken Caesar Wrap",
-        category: "Hot Food",
-        price: 11.49,
-        inventory: 4,
-        isHotFood: true,
-        selfServe: false,
-    },
-    {
-        id: 3,
-        name: "Energy Bar",
-        category: "Snacks",
-        price: 3.99,
-        inventory: 28,
-        isHotFood: false,
-        selfServe: true,
-    },
-    {
-        id: 4,
-        name: "Iced Coffee",
-        category: "Drinks",
-        price: 4.49,
-        inventory: 15,
-        isHotFood: false,
-        selfServe: true,
-    },
-    {
-        id: 5,
-        name: "Turkey Panini",
-        category: "Hot Food",
-        price: 10.99,
-        inventory: 3,
-        isHotFood: true,
-        selfServe: false,
-    },
-    {
-        id: 6,
-        name: "Protein Cookies",
-        category: "Snacks",
-        price: 5.99,
-        inventory: 19,
-        isHotFood: false,
-        selfServe: true,
-    },
-    {
-        id: 7,
-        name: "Fruit Smoothie",
-        category: "Drinks",
-        price: 7.49,
-        inventory: 10,
-        isHotFood: false,
-        selfServe: true,
-    },
-    {
-        id: 8,
-        name: "Liberty Hoodie",
-        category: "Merch",
-        price: 44.99,
-        inventory: 6,
-        isHotFood: false,
-        selfServe: false,
-    },
-];
 
-const categories = [
-    "All",
-    "Drinks",
-    "Hot Food",
-    "Snacks",
-    "Merch",
-];
+// const categories = [
+//     { label: "All", value: "All" },
+//     { label: "Drinks", value: "DRINKS" },
+//     { label: "Hot Food", value: "HOT_FOOD" },
+//     { label: "Snacks", value: "SNACKS" },
+//     { label: "Merch", value: "MERCH" },
+// ];
 
-export default function ProductTable() {
+type ProductTableProps = {
+    refreshKey?: number;
+};
+
+export default function ProductTable({ refreshKey = 0 }: ProductTableProps) {
     const [search, setSearch] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All");
+    const [products, setProducts] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [productToDelete, setProductToDelete] = useState(null);
+    const [productToEdit, setProductToEdit] = useState(null);
+
+    useEffect(() => {
+        async function loadProducts() {
+            try {
+                setIsLoading(true);
+
+                const data = await fetchAdminProducts();
+                setProducts(data);
+            } catch (error) {
+                console.error(error);
+                setProducts([]);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        loadProducts();
+    }, [refreshKey]);
 
     const filteredProducts = useMemo(() => {
-        return mockProducts.filter((product) => {
+        return products.filter((product) => {
             const matchesSearch =
                 product.name
                     .toLowerCase()
@@ -103,7 +57,26 @@ export default function ProductTable() {
 
             return matchesSearch && matchesCategory;
         });
-    }, [search, selectedCategory]);
+    }, [products, search, selectedCategory]);
+
+    const categoryOptions = useMemo(() => {
+        const uniqueCategories = Array.from(
+            new Set(products.map((product) => product.category))
+        );
+
+        return ["All", ...uniqueCategories];
+    }, [products]);
+
+    function formatCategory(category: string) {
+        return category
+            .toLowerCase()
+            .split("_")
+            .map(
+                (word) =>
+                    word.charAt(0).toUpperCase() + word.slice(1)
+            )
+            .join(" ");
+    }
 
     return (
         <div className="overflow-hidden">
@@ -127,28 +100,26 @@ export default function ProductTable() {
                 />
 
                 <div className="flex gap-2 flex-wrap">
-                    {categories.map((category) => (
+                    {categoryOptions.map((category) => (
                         <button
                             key={category}
                             onClick={() => setSelectedCategory(category)}
-                            className={`
-                    px-4
-                    py-3
-                    rounded-2xl
-                    font-semibold
-                    transition
-                    hover:cursor-pointer
-                    ${selectedCategory === category
+                            className={`px-4 py-3 rounded-2xl font-semibold transition hover:cursor-pointer
+                            ${selectedCategory === category
                                     ? "bg-blue-950 text-white"
                                     : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200"
                                 }
                 `}
                         >
-                            {category}
+                            {category === "All"
+                                ? "All"
+                                : formatCategory(category)}
                         </button>
                     ))}
                 </div>
             </div>
+
+            {/* Table */}
             <table className="w-full">
                 <thead>
                     <tr className="border-b border-zinc-200">
@@ -174,53 +145,140 @@ export default function ProductTable() {
                 </thead>
 
                 <tbody>
-                    {filteredProducts.map((product) => (
-                        <tr
-                            key={product.id}
-                            className="border-b border-zinc-100 last:border-b-0 hover:bg-zinc-50 transition"
-                        >
-                            <td className="py-5 px-3">
-                                <p className="font-semibold text-zinc-900">
-                                    {product.name}
-                                </p>
-                            </td>
-
-                            <td className="py-5 px-3 text-zinc-500">
-                                {product.category}
-                            </td>
-
-                            <td className="py-5 px-3 font-semibold text-zinc-900">
-                                ${product.price.toFixed(2)}
-                            </td>
-
-                            <td className="py-5 px-3">
-                                <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm font-semibold">
-                                    {product.inventory} left
-                                </span>
-                            </td>
-
-                            <td className="py-5 px-3">
-                                <ProductStatusBadges
-                                    isHotFood={product.isHotFood}
-                                    selfServe={product.selfServe}
-                                />
-                            </td>
-
-                            <td className="py-5 px-3">
-                                <div className="flex justify-end gap-2">
-                                    <button className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-xl font-semibold transition hover:cursor-pointer">
-                                        Edit
-                                    </button>
-
-                                    <button className="bg-red-50 hover:bg-red-100 text-red-500 px-4 py-2 rounded-xl font-semibold transition hover:cursor-pointer">
-                                        Delete
-                                    </button>
-                                </div>
+                    {isLoading && (
+                        <tr>
+                            <td
+                                colSpan={6}
+                                className="py-10 text-center text-zinc-500"
+                            >
+                                Loading products...
                             </td>
                         </tr>
-                    ))}
+                    )}
+
+                    {!isLoading && filteredProducts.length === 0 && (
+                        <tr>
+                            <td
+                                colSpan={6}
+                                className="py-10 text-center text-zinc-500"
+                            >
+                                No products found.
+                            </td>
+                        </tr>
+                    )}
+                    {!isLoading &&
+                        filteredProducts.map((product) => (
+                            <tr
+                                key={product.id}
+                                className="border-b border-zinc-100 last:border-b-0 hover:bg-zinc-50 transition"
+                            >
+                                <td className="py-5 px-3">
+                                    <p className="font-semibold text-zinc-900">
+                                        {product.name}
+                                    </p>
+                                </td>
+
+                                <td className="py-5 px-3 text-zinc-500">
+                                    {formatCategory(product.category)}
+                                </td>
+
+                                <td className="py-5 px-3 font-semibold text-zinc-900">
+                                    ${(product.priceCents / 100).toFixed(2)}
+                                </td>
+
+                                <td className="py-5 px-3">
+                                    <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm font-semibold">
+                                        {product.inventoryCount} left
+                                    </span>
+                                </td>
+
+                                <td className="py-5 px-3">
+                                    <ProductStatusBadges
+                                        isHotFood={product.isHotFood}
+                                        selfServe={product.isSelfServeEnabled}
+                                    />
+                                </td>
+
+                                <td className="py-5 px-3">
+                                    <div className="flex justify-end gap-2">
+                                        <button
+                                            onClick={() => setProductToEdit(product)}
+                                            className="bg-blue-50 hover:bg-blue-100 hover:cursor-pointer text-blue-600 px-4 py-2 rounded-xl font-semibold transition hover:cursor-pointer">
+                                            Edit
+                                        </button>
+
+                                        <button
+                                            onClick={() => setProductToDelete(product)}
+                                            className="bg-red-50 hover:bg-red-100 hover:cursor-pointer text-red-500 px-4 py-2 rounded-xl font-semibold transition hover:cursor-pointer">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
                 </tbody>
             </table>
+
+            {/* Edit Modal */}
+            {productToEdit && (
+                <EditProductModal
+                    product={productToEdit}
+                    onClose={() => setProductToEdit(null)}
+                    onProductUpdated={(updatedProduct) => {
+                        setProducts((currentProducts) =>
+                            currentProducts.map((product) =>
+                                product.id === updatedProduct.id
+                                    ? updatedProduct
+                                    : product
+                            )
+                        );
+
+                        setProductToEdit(null);
+                    }}
+                />
+            )}
+
+            {/* Delete Modal */}
+            {productToDelete && (
+                <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-6">
+                    <div className="bg-white rounded-3xl p-6 w-full max-w-md">
+                        <h2 className="text-2xl font-bold">Delete Product?</h2>
+
+                        <p className="text-zinc-500 mt-3">
+                            Are you sure you want to delete{" "}
+                            <span className="font-semibold text-zinc-900">
+                                {productToDelete.name}
+                            </span>
+                            ?
+                        </p>
+
+                        <div className="flex gap-3 mt-6">
+                            <button
+                                onClick={() => setProductToDelete(null)}
+                                className="flex-1 bg-zinc-100 hover:cursor-pointer rounded-2xl py-3 font-semibold"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                onClick={async () => {
+                                    await deleteProduct(productToDelete.id);
+
+                                    setProducts((currentProducts) =>
+                                        currentProducts.filter(
+                                            (product) => product.id !== productToDelete.id
+                                        )
+                                    );
+                                    setProductToDelete(null);
+                                }}
+                                className="flex-1 bg-red-500 hover:cursor-pointer text-white rounded-2xl py-3 font-semibold"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

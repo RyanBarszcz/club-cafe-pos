@@ -4,6 +4,7 @@ import productsRoutes from "./routes/products.routes.js";
 import transactionsRoutes from "./routes/transactions.routes.js";
 import analyticsRoutes from "./routes/analytics.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import teamRoutes from "./routes/team.routes.js";
 
 const app = express();
 
@@ -21,5 +22,6 @@ app.use("/products", productsRoutes);
 app.use("/transactions", transactionsRoutes);
 app.use("/analytics", analyticsRoutes);
 app.use("/admin", adminRoutes);
+app.use("/team", teamRoutes);
 
 export default app;

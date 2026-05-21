@@ -68,3 +68,56 @@ export async function fetchAdminDashboard() {
     throw error;
   }
 }
+
+export async function fetchAdminProducts() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/products`);
+
+        const data = await handleResponse(response);
+
+        return data.products;
+    } catch (error) {
+        console.error("fetchAdminProducts error:", error);
+        throw error;
+    }
+}
+
+export async function createProduct(productData) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/products`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(productData),
+        });
+
+        const data = await handleResponse(response);
+        return data.product;
+    } catch (error) {
+        console.error("createProduct error:", error);
+        throw error;
+    }
+}
+
+export async function updateProduct(id, productData) {
+    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(productData),
+    });
+
+    const data = await handleResponse(response);
+    return data.product;
+}
+
+export async function deleteProduct(id) {
+    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+        method: "DELETE",
+    });
+
+    const data = await handleResponse(response);
+    return data.product;
+}
