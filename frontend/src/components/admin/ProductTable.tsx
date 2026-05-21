@@ -190,7 +190,7 @@ export default function ProductTable() {
                             </td>
 
                             <td className="py-5 px-3 font-semibold text-zinc-900">
-                                ${product.price.toFixed(2)}
+                                ${ce.toFixed(2)}
                             </td>
 
                             <td className="py-5 px-3">

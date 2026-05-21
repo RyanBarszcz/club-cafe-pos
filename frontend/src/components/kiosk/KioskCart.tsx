@@ -21,7 +21,7 @@ export default function KioskCart({
     isEmployee,
 }: KioskCartProps) {
     const subtotal = cartItems.reduce(
-        (sum, item) => sum + item.price * item.quantity,
+        (sum, item) => sum + (item.priceCents / 100) * item.quantity,
         0
     );
     const router = useRouter();
@@ -123,7 +123,7 @@ export default function KioskCart({
                                         <button onClick={() => onIncreaseItem(item.id)}>+</button>
                                     </div>
 
-                                    <strong>${(item.price * item.quantity).toFixed(2)}</strong>
+                                    <strong>${((item.priceCents / 100) * item.quantity).toFixed(2)}</strong>
                                 </div>
                             </div>
                         </div>

@@ -11,7 +11,7 @@ export type Product = {
   id: string;
   name: string;
   category: ProductCategory;
-  price: number;
+  priceCents: number;
   image: string;
   isHotFood?: boolean;
   isSelfServeEnabled: boolean;

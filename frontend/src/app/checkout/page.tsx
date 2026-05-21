@@ -35,14 +35,14 @@ export default function CheckoutPage() {
 
     const subtotal = useMemo(() => {
         return cartItems.reduce((sum, item) => {
-            return sum + item.price * item.quantity;
+            return sum + (item.priceCents / 100) * item.quantity;
         }, 0);
     }, [cartItems]);
 
     const compedAmount = useMemo(() => {
         return cartItems.reduce((sum, item) => {
             if (!item.isComped) return sum;
-            return sum + item.price * item.quantity;
+            return sum + (item.priceCents / 100) * item.quantity;
         }, 0);
     }, [cartItems]);
 
@@ -97,7 +97,7 @@ export default function CheckoutPage() {
 
                                     <p>
                                         {item.quantity}x • $
-                                        {item.price.toFixed(2)} each
+                                        {(item.priceCents / 100).toFixed(2)} each
                                     </p>
                                 </div>
 
@@ -107,7 +107,7 @@ export default function CheckoutPage() {
                                     >
                                         {item.isComped
                                             ? "COMPED"
-                                            : `$${(item.price * item.quantity).toFixed(2)}`}
+                                            : `$${((item.priceCents / 100) * item.quantity).toFixed(2)}`}
                                     </strong>
 
                                     {isEmployee && (

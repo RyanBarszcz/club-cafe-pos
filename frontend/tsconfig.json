@@ -30,7 +30,7 @@
     "**/*.mts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "src/lib/api.js"  ],
   "exclude": [
     "node_modules"
   ]

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useUser } from "@clerk/nextjs";
-import { mockProducts } from "../lib/mockProducts";
+import { fetchProducts } from "../../src/lib/api.js";
 import CategoryTabs from "../components/kiosk/CategoryTabs";
 import KioskProductGrid from "../components/kiosk/KioskProductGrid";
 import KioskCart from "../components/kiosk/KioskCart";
@@ -23,6 +23,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [cartItems, setCartItems] = useState([]);
+  const [products, setProducts] = useState([]);
 
   const role = useMemo(() => {
     if (!isLoaded || !isSignedIn || !user) return "guest";
@@ -38,15 +39,32 @@ export default function Home() {
   const isEmployee = role === "employee" || role === "admin";
 
   useEffect(() => {
+      async function loadProducts() {
+          try {
+              const data = await fetchProducts();
+              setProducts(data);
+          } catch (error) {
+              console.error(error);
+          }
+      }
+
+      loadProducts();
+  }, []);
+
+  useEffect(() => {
+    console.log("products state updated", products);
+  }, [products]);
+
+  useEffect(() => {
     localStorage.setItem("currentCart", JSON.stringify(cartItems));
   }, [cartItems]);
 
   const visibleProducts = useMemo(() => {
-    return mockProducts.filter((product) => {
+    return products.filter((product) => {
       if (isEmployee) return true;
       return product.isSelfServeEnabled;
     });
-  }, [isEmployee]);
+  }, [isEmployee, products]);
 
   const categories = useMemo(() => {
     return allCategories.filter((category) => {

@@ -17,7 +17,7 @@ export default function KioskProductCard({
 
             <div className="product-info">
                 <h3>{product.name}</h3>
-                <p>${product.price.toFixed(2)}</p>
+                <p>${(product.priceCents / 100).toFixed(2)}</p>
             </div>
         </button>
     );
