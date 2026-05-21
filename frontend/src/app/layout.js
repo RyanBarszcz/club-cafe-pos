@@ -16,6 +16,17 @@ export const metadata = {
   title: "Liberty Cafe POS",
   description: "Liberty Athletic Club POS System",
 };
+// ADMIN
+// TODO: Dashboard api and admin front linkage
+// TODO: Products Management api and admin front linkage
+// TODO: Team Management api and admin front linkage
+// TODO: Settings api and admin front linkage
+
+// TODO: Do pay be membership
+// TODO: Member lookup functionality
+// TODO: Add purchase items to account
+
+
 
 export default function RootLayout({ children }) {
   return (

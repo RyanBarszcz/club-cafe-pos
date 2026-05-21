@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import DashboardStatCard from "../../../components/admin/DashboardStatCard";
+import { fetchProductAnalytics } from "../../../lib/api";
 
 const ranges = ["Daily", "Weekly", "Monthly", "YTD"] as const;
 const categories = ["All", "Drinks", "Hot Food", "Snacks", "Merch"] as const;
@@ -10,60 +11,29 @@ type Range = (typeof ranges)[number];
 type SortBy = "units" | "revenue";
 type SortDirection = "asc" | "desc";
 
-const productAnalytics = [
-    {
-        id: 1,
-        name: "Protein Shake",
-        category: "Drinks",
-        dailyUnits: 9,
-        weeklyUnits: 48,
-        monthlyUnits: 190,
-        ytdUnits: 1320,
-        dailyRevenue: 80.91,
-        weeklyRevenue: 431.52,
-        monthlyRevenue: 1708.1,
-        ytdRevenue: 11866.8,
-    },
-    {
-        id: 2,
-        name: "Chicken Caesar Wrap",
-        category: "Hot Food",
-        dailyUnits: 5,
-        weeklyUnits: 32,
-        monthlyUnits: 124,
-        ytdUnits: 840,
-        dailyRevenue: 57.45,
-        weeklyRevenue: 367.68,
-        monthlyRevenue: 1424.76,
-        ytdRevenue: 9651.6,
-    },
-    {
-        id: 3,
-        name: "Energy Bar",
-        category: "Snacks",
-        dailyUnits: 7,
-        weeklyUnits: 26,
-        monthlyUnits: 115,
-        ytdUnits: 910,
-        dailyRevenue: 27.93,
-        weeklyRevenue: 103.74,
-        monthlyRevenue: 458.85,
-        ytdRevenue: 3630.9,
-    },
-    {
-        id: 4,
-        name: "Iced Coffee",
-        category: "Drinks",
-        dailyUnits: 6,
-        weeklyUnits: 29,
-        monthlyUnits: 142,
-        ytdUnits: 1040,
-        dailyRevenue: 26.94,
-        weeklyRevenue: 130.21,
-        monthlyRevenue: 637.58,
-        ytdRevenue: 4669.6,
-    },
-];
+const rangeToApi = {
+    Daily: "daily",
+    Weekly: "weekly",
+    Monthly: "monthly",
+    YTD: "ytd",
+} as const;
+
+type AnalyticsProduct = {
+    id: string;
+    name: string;
+    category: string;
+    unitsSold: number;
+    revenueCents: number;
+};
+
+type AnalyticsResponse = {
+    summary: {
+        revenueCents: number;
+        unitsSold: number;
+        bestSeller: AnalyticsProduct | null;
+    };
+    products: AnalyticsProduct[];
+};
 
 export default function AnalyticsPage() {
     const [selectedRange, setSelectedRange] = useState<Range>("Weekly");
@@ -71,24 +41,29 @@ export default function AnalyticsPage() {
     const [selectedCategory, setSelectedCategory] = useState("All");
     const [sortBy, setSortBy] = useState<SortBy>("revenue");
     const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+    const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const unitKey =
-        selectedRange === "Daily"
-            ? "dailyUnits"
-            : selectedRange === "Weekly"
-                ? "weeklyUnits"
-                : selectedRange === "Monthly"
-                    ? "monthlyUnits"
-                    : "ytdUnits";
+    useEffect(() => {
+        async function loadAnalytics() {
+            try {
+                setIsLoading(true);
 
-    const revenueKey =
-        selectedRange === "Daily"
-            ? "dailyRevenue"
-            : selectedRange === "Weekly"
-                ? "weeklyRevenue"
-                : selectedRange === "Monthly"
-                    ? "monthlyRevenue"
-                    : "ytdRevenue";
+                const data = await fetchProductAnalytics(
+                    rangeToApi[selectedRange]
+                );
+
+                setAnalytics(data);
+            } catch (error) {
+                console.error(error);
+                setAnalytics(null);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        loadAnalytics();
+    }, [selectedRange]);
 
     function handleSort(column: SortBy) {
         if (sortBy === column) {
@@ -100,40 +75,39 @@ export default function AnalyticsPage() {
     }
 
     const filteredProducts = useMemo(() => {
-        return productAnalytics
+        const products = analytics?.products ?? [];
+
+        return products
             .filter((product) => {
                 const matchesSearch = product.name
                     .toLowerCase()
                     .includes(search.toLowerCase());
 
                 const matchesCategory =
-                    selectedCategory === "All" ||
-                    product.category === selectedCategory;
+                    selectedCategory === "All" || product.category === selectedCategory;
 
                 return matchesSearch && matchesCategory;
             })
             .sort((a, b) => {
-                const aValue = sortBy === "units" ? a[unitKey] : a[revenueKey];
-                const bValue = sortBy === "units" ? b[unitKey] : b[revenueKey];
+                const aValue = sortBy === "units" ? a.unitsSold : a.revenueCents;
+                const bValue = sortBy === "units" ? b.unitsSold : b.revenueCents;
 
-                return sortDirection === "asc"
-                    ? aValue - bValue
-                    : bValue - aValue;
+                return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
             });
-    }, [search, selectedCategory, sortBy, sortDirection, unitKey, revenueKey]);
+    }, [analytics, search, selectedCategory, sortBy, sortDirection]);
 
-    const totalRevenue = filteredProducts.reduce(
-        (sum, product) => sum + product[revenueKey],
+    const totalRevenueCents = filteredProducts.reduce(
+        (sum, product) => sum + product.revenueCents,
         0
     );
 
     const totalUnits = filteredProducts.reduce(
-        (sum, product) => sum + product[unitKey],
+        (sum, product) => sum + product.unitsSold,
         0
     );
 
     const bestSeller = [...filteredProducts].sort(
-        (a, b) => b[unitKey] - a[unitKey]
+        (a, b) => b.unitsSold - a.unitsSold
     )[0];
 
     return (
@@ -166,7 +140,7 @@ export default function AnalyticsPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <DashboardStatCard
                     title={`${selectedRange} Revenue`}
-                    value={`$${totalRevenue.toFixed(2)}`}
+                    value={`$${(totalRevenueCents / 100).toFixed(2)}`}
                     highlighted
                 />
 
@@ -260,12 +234,12 @@ export default function AnalyticsPage() {
 
                                 <td className="py-5 px-3">
                                     <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm font-semibold">
-                                        {product[unitKey]}
+                                        {product.unitsSold}
                                     </span>
                                 </td>
 
                                 <td className="py-5 px-3 font-bold text-zinc-900">
-                                    ${product[revenueKey].toFixed(2)}
+                                    ${(product.revenueCents / 100).toFixed(2)}
                                 </td>
                             </tr>
                         ))}

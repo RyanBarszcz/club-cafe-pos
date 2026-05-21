@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import productsRoutes from "./routes/products.routes.js";
+import transactionsRoutes from "./routes/transactions.routes.js";
+import analyticsRoutes from "./routes/analytics.routes.js";
 
 const app = express();
 
@@ -15,5 +17,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/products", productsRoutes);
+app.use("/transactions", transactionsRoutes);
+app.use("/analytics", analyticsRoutes);
 
 export default app;

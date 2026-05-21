@@ -24,6 +24,7 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [cartItems, setCartItems] = useState([]);
   const [products, setProducts] = useState([]);
+  const [hasLoadedCart, setHasLoadedCart] = useState(false);
 
   const role = useMemo(() => {
     if (!isLoaded || !isSignedIn || !user) return "guest";
@@ -56,8 +57,27 @@ export default function Home() {
   }, [products]);
 
   useEffect(() => {
+    const savedCart = localStorage.getItem("currentCart");
+
+    if (savedCart) {
+      try {
+        if (savedCart) {
+          setCartItems(JSON.parse(savedCart));
+        }
+      } catch (error) {
+        console.error("Failed to restore cart", error);
+        localStorage.removeItem("currentCart");
+      }
+    }
+
+    setHasLoadedCart(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedCart) return;
+
     localStorage.setItem("currentCart", JSON.stringify(cartItems));
-  }, [cartItems]);
+  }, [cartItems, hasLoadedCart]);
 
   const visibleProducts = useMemo(() => {
     return products.filter((product) => {
