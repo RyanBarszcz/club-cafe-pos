@@ -57,3 +57,14 @@ export async function fetchProductAnalytics(range) {
         throw error;
     }
 }
+
+export async function fetchAdminDashboard() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/dashboard`);
+
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("fetchAdminDashboard error:", error);
+    throw error;
+  }
+}

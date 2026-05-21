@@ -21,6 +21,7 @@ export const metadata = {
 // TODO: Products Management api and admin front linkage
 // TODO: Team Management api and admin front linkage
 // TODO: Settings api and admin front linkage
+// TODO: Create transactions page where we could possibly refund
 
 // TODO: Do pay be membership
 // TODO: Member lookup functionality
