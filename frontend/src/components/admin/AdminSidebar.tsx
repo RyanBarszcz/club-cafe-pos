@@ -49,6 +49,13 @@ export default function AdminSidebar() {
                     </Link>
 
                     <Link
+                        className={navClass("/admin/transactions")}
+                        href="/admin/transactions"
+                    >
+                        Transactions
+                    </Link>
+
+                    <Link
                         className={navClass("/admin/products")}
                         href="/admin/products"
                     >

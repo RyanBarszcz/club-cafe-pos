@@ -121,3 +121,55 @@ export async function createTransaction(req: Request, res: Response) {
     });
   }
 }
+
+export async function getTransactions(req: Request, res: Response) {
+    try {
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 20;
+        const sortBy = String(req.query.sortBy || "createdAt");
+        const sortOrder = String(req.query.sortOrder || "desc");
+
+        const allowedSortFields = ["createdAt", "totalCents", "subtotal", "tax"];
+
+        const safeSortBy = allowedSortFields.includes(sortBy)
+            ? sortBy
+            : "createdAt";
+
+        const safeSortOrder = sortOrder === "asc" ? "asc" : "desc";
+
+        const skip = (page - 1) * limit;
+
+        const [transactions, totalCount] = await Promise.all([
+            prisma.transaction.findMany({
+                skip,
+                take: limit,
+                orderBy: {
+                    [safeSortBy]: safeSortOrder,
+                },
+                include: {
+                    items: true,
+                    // member: true,
+                    staffUser: true,
+                },
+            }),
+
+            prisma.transaction.count(),
+        ]);
+
+        return res.status(200).json({
+            transactions,
+            pagination: {
+                page,
+                limit,
+                totalCount,
+                totalPages: Math.ceil(totalCount / limit),
+            },
+        });
+    } catch (error) {
+        console.error("Get transactions error:", error);
+
+        return res.status(500).json({
+            message: "Failed to fetch transactions",
+        });
+    }
+}

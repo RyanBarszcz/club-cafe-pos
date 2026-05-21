@@ -45,6 +45,29 @@ export async function createTransaction(transactionData) {
     }
 }
 
+export async function fetchTransactions({
+    page = 1,
+    limit = 20,
+    sortBy = "createdAt",
+    sortOrder = "desc",
+}) {
+    try {
+        const params = new URLSearchParams({
+            page: String(page),
+            limit: String(limit),
+            sortBy,
+            sortOrder,
+        });
+
+        const response = await fetch(`${API_BASE_URL}/transactions?${params}`);
+
+        return await handleResponse(response);
+    } catch (error) {
+        console.error("fetchTransactions error:", error);
+        throw error;
+    }
+}
+
 export async function fetchProductAnalytics(range) {
     try {
         const response = await fetch(
