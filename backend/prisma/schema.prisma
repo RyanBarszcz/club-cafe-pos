@@ -107,3 +107,18 @@ model TransactionItem {
 
   @@map("transaction_items")
 }
+
+model AppSettings {
+  id                     String   @id @default(cuid())
+  cafeName               String   @default("Liberty Cafe")
+  taxRate                Float    @default(6)
+  enableMemberCharging   Boolean  @default(true)
+  enableSelfServiceKiosk Boolean  @default(true)
+  requireManagerApproval Boolean  @default(true)
+  lowStockThreshold      Int      @default(5)
+  requirePinForDiscounts Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@map("app_settings")
+}

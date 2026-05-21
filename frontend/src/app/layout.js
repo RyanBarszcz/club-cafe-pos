@@ -17,7 +17,6 @@ export const metadata = {
   description: "Liberty Athletic Club POS System",
 };
 // ADMIN
-// TODO: Team Management api and admin front linkage
 // TODO: Settings api and admin front linkage
 // TODO: Create transactions page where we could possibly refund
 // TODO: Dashboard import data function needs to be created

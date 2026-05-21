@@ -1,9 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { fetchSettings, updateSettings } from "../../../lib/api";
+
+type Settings = {
+    cafeName: string;
+    taxRate: string;
+    enableMemberCharging: boolean;
+    enableSelfServiceKiosk: boolean;
+    requireManagerApproval: boolean;
+    lowStockThreshold: string;
+    requirePinForDiscounts: boolean;
+};
 
 export default function SettingsPage() {
-    const [settings, setSettings] = useState({
+    const [settings, setSettings] = useState<Settings>({
         cafeName: "Liberty Cafe",
         taxRate: "6",
         enableMemberCharging: true,
@@ -13,11 +24,85 @@ export default function SettingsPage() {
         requirePinForDiscounts: false,
     });
 
-    function updateSetting(key: keyof typeof settings, value: string | boolean) {
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [message, setMessage] = useState("");
+
+    useEffect(() => {
+        loadSettings();
+    }, []);
+
+    async function loadSettings() {
+        try {
+            setIsLoading(true);
+            setMessage("");
+
+            const data = await fetchSettings();
+
+            setSettings({
+                cafeName: data.cafeName,
+                taxRate: String(data.taxRate),
+                enableMemberCharging: data.enableMemberCharging,
+                enableSelfServiceKiosk: data.enableSelfServiceKiosk,
+                requireManagerApproval: data.requireManagerApproval,
+                lowStockThreshold: String(data.lowStockThreshold),
+                requirePinForDiscounts: data.requirePinForDiscounts,
+            });
+        } catch (error) {
+            console.error(error);
+            setMessage("Failed to load settings");
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    function updateSetting(key: keyof Settings, value: string | boolean) {
         setSettings((prev) => ({
             ...prev,
             [key]: value,
         }));
+    }
+
+    async function handleSaveSettings() {
+        try {
+            setIsSaving(true);
+            setMessage("");
+
+            const savedSettings = await updateSettings({
+                cafeName: settings.cafeName,
+                taxRate: Number(settings.taxRate),
+                enableMemberCharging: settings.enableMemberCharging,
+                enableSelfServiceKiosk: settings.enableSelfServiceKiosk,
+                requireManagerApproval: settings.requireManagerApproval,
+                lowStockThreshold: Number(settings.lowStockThreshold),
+                requirePinForDiscounts: settings.requirePinForDiscounts,
+            });
+
+            setSettings({
+                cafeName: savedSettings.cafeName,
+                taxRate: String(savedSettings.taxRate),
+                enableMemberCharging: savedSettings.enableMemberCharging,
+                enableSelfServiceKiosk: savedSettings.enableSelfServiceKiosk,
+                requireManagerApproval: savedSettings.requireManagerApproval,
+                lowStockThreshold: String(savedSettings.lowStockThreshold),
+                requirePinForDiscounts: savedSettings.requirePinForDiscounts,
+            });
+
+            setMessage("Settings saved successfully");
+        } catch (error) {
+            console.error(error);
+            setMessage("Failed to save settings");
+        } finally {
+            setIsSaving(false);
+        }
+    }
+
+    if (isLoading) {
+        return (
+            <div className="max-w-5xl mx-auto">
+                <p className="text-zinc-500">Loading settings...</p>
+            </div>
+        );
     }
 
     return (
@@ -28,9 +113,16 @@ export default function SettingsPage() {
                 </h1>
 
                 <p className="text-zinc-500 mt-2">
-                    Configure cafe operations, checkout behavior, and inventory rules.
+                    Configure cafe operations, checkout behavior, and inventory
+                    rules.
                 </p>
             </div>
+
+            {message && (
+                <div className="mb-4 bg-zinc-100 text-zinc-700 px-4 py-3 rounded-2xl font-semibold">
+                    {message}
+                </div>
+            )}
 
             <div className="space-y-6">
                 <section className="bg-white rounded-3xl border border-zinc-200 p-6">
@@ -128,13 +220,17 @@ export default function SettingsPage() {
                             type="number"
                             value={settings.lowStockThreshold}
                             onChange={(e) =>
-                                updateSetting("lowStockThreshold", e.target.value)
+                                updateSetting(
+                                    "lowStockThreshold",
+                                    e.target.value
+                                )
                             }
                             className="w-full max-w-xs bg-zinc-100 border border-zinc-200 rounded-2xl px-4 py-3 outline-none focus:border-blue-500"
                         />
 
                         <p className="text-sm text-zinc-500 mt-2">
-                            Products at or below this count will show as low stock.
+                            Products at or below this count will show as low
+                            stock.
                         </p>
                     </div>
                 </section>
@@ -158,8 +254,12 @@ export default function SettingsPage() {
                 </section>
 
                 <div className="flex justify-end">
-                    <button className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl font-semibold transition hover:cursor-pointer">
-                        Save Settings
+                    <button
+                        onClick={handleSaveSettings}
+                        disabled={isSaving}
+                        className="bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-300 text-white px-6 py-3 rounded-2xl font-semibold transition hover:cursor-pointer"
+                    >
+                        {isSaving ? "Saving..." : "Save Settings"}
                     </button>
                 </div>
             </div>
@@ -183,13 +283,9 @@ function SettingToggle({
     return (
         <div className="flex items-center justify-between gap-6 border-b border-zinc-100 last:border-b-0 pb-5 last:pb-0">
             <div>
-                <h3 className="font-semibold text-zinc-900">
-                    {title}
-                </h3>
+                <h3 className="font-semibold text-zinc-900">{title}</h3>
 
-                <p className="text-sm text-zinc-500 mt-1">
-                    {description}
-                </p>
+                <p className="text-sm text-zinc-500 mt-1">{description}</p>
             </div>
 
             <button

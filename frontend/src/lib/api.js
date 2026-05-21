@@ -181,3 +181,20 @@ export async function deleteTeamMember(id) {
         throw error;
     }
 }
+
+export async function fetchSettings() {
+    const response = await fetch(`${API_BASE_URL}/settings`);
+    return await handleResponse(response);
+}
+
+export async function updateSettings(settingsData) {
+    const response = await fetch(`${API_BASE_URL}/settings`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(settingsData),
+    });
+
+    return await handleResponse(response);
+}
