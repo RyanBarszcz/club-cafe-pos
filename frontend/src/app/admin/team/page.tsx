@@ -1,62 +1,65 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+    fetchTeamMembers,
+    createTeamMember,
+    updateTeamMember,
+    deleteTeamMember,
+} from "../../../lib/api";
 
 type TeamMember = {
-    id: number;
-    name: string;
-    email: string;
-    role: "Admin" | "Staff";
-    status: "Active" | "Inactive";
+    id: string;
+    name: string | null;
+    username: string;
+    role: "ADMIN" | "STAFF";
+    active: boolean;
 };
 
-const initialTeamMembers: TeamMember[] = [
-    {
-        id: 1,
-        name: "Ryan Barszcz",
-        email: "ryan@libertypos.com",
-        role: "Admin",
-        status: "Active",
-    },
-    {
-        id: 2,
-        name: "Cafe Staff",
-        email: "staff@libertypos.com",
-        role: "Staff",
-        status: "Active",
-    },
-    {
-        id: 3,
-        name: "Front Desk",
-        email: "frontdesk@libertypos.com",
-        role: "Staff",
-        status: "Inactive",
-    },
-];
-
 export default function TeamPage() {
-    const [teamMembers, setTeamMembers] = useState(initialTeamMembers);
+    const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
     const [search, setSearch] = useState("");
     const [roleFilter, setRoleFilter] = useState("All");
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState("");
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
 
     const [formData, setFormData] = useState({
         name: "",
-        email: "",
+        password: "",
         role: "Staff" as "Admin" | "Staff",
         status: "Active" as "Active" | "Inactive",
     });
 
+    async function loadTeamMembers() {
+        try {
+            setIsLoading(true);
+            const users = await fetchTeamMembers();
+            setTeamMembers(users);
+        } catch (error) {
+            console.error(error);
+            setError("Failed to load team members");
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        loadTeamMembers();
+    }, []);
+
     const filteredTeamMembers = useMemo(() => {
         return teamMembers.filter((member) => {
             const matchesSearch =
-                member.name.toLowerCase().includes(search.toLowerCase()) ||
-                member.email.toLowerCase().includes(search.toLowerCase());
+                member.name?.toLowerCase().includes(search.toLowerCase()) ||
+                member.username.toLowerCase().includes(search.toLowerCase());
+
+            const displayRole = member.role === "ADMIN" ? "Admin" : "Staff";
 
             const matchesRole =
-                roleFilter === "All" || member.role === roleFilter;
+                roleFilter === "All" || displayRole === roleFilter;
 
             return matchesSearch && matchesRole;
         });
@@ -66,7 +69,7 @@ export default function TeamPage() {
         setEditingMember(null);
         setFormData({
             name: "",
-            email: "",
+            password: "",
             role: "Staff",
             status: "Active",
         });
@@ -76,50 +79,70 @@ export default function TeamPage() {
     function openEditModal(member: TeamMember) {
         setEditingMember(member);
         setFormData({
-            name: member.name,
-            email: member.email,
-            role: member.role,
-            status: member.status,
+            name: member.name ?? "",
+            password: "",
+            role: member.role === "ADMIN" ? "Admin" : "Staff",
+            status: member.active ? "Active" : "Inactive",
         });
         setIsModalOpen(true);
     }
 
-    function handleSaveMember() {
-        if (!formData.name || !formData.email) return;
+    async function handleSaveMember() {
+        try {
+            if (!formData.name) return;
 
-        if (editingMember) {
-            setTeamMembers((prev) =>
-                prev.map((member) =>
-                    member.id === editingMember.id
-                        ? { ...member, ...formData }
-                        : member
-                )
-            );
-        } else {
-            setTeamMembers((prev) => [
-                ...prev,
-                {
-                    id: Date.now(),
-                    ...formData,
-                },
-            ]);
+            if (editingMember) {
+                const updatedMember = await updateTeamMember(editingMember.id, {
+                    name: formData.name,
+                    role: formData.role,
+                    active: formData.status === "Active",
+                });
+
+                setTeamMembers((prev) =>
+                    prev.map((member) =>
+                        member.id === editingMember.id ? updatedMember : member
+                    )
+                );
+            } else {
+                if (!formData.password) return;
+
+                const newMember = await createTeamMember({
+                    name: formData.name,
+                    password: formData.password,
+                    role: formData.role,
+                    status: formData.status,
+                });
+
+                setTeamMembers((prev) => [newMember, ...prev]);
+            }
+
+            setIsModalOpen(false);
+        } catch (error) {
+            console.error(error);
+            setError("Failed to save team member");
         }
-
-        setIsModalOpen(false);
     }
 
-    function handleDeleteMember(id: number) {
-        setTeamMembers((prev) => prev.filter((member) => member.id !== id));
+    async function handleDeleteMember(id: string) {
+        try {
+            const updatedMember = await deleteTeamMember(id);
+
+            setTeamMembers((prev) =>
+                prev.map((member) =>
+                    member.id === id ? updatedMember : member
+                )
+            );
+        } catch (error) {
+            console.error(error);
+            setError("Failed to deactivate team member");
+        }
     }
 
     return (
         <div className="max-w-7xl mx-auto">
             <div className="mb-8 flex items-center justify-between">
                 <div>
-                    <h1 className="text-4xl font-bold text-zinc-900">
-                        Team
-                    </h1>
-
+                    <h1 className="text-4xl font-bold text-zinc-900">Team</h1>
                     <p className="text-zinc-500 mt-2">
                         Create, edit, and manage admin and staff accounts.
                     </p>
@@ -132,6 +155,12 @@ export default function TeamPage() {
                     + Add Member
                 </button>
             </div>
+
+            {error && (
+                <div className="mb-4 bg-red-50 text-red-600 px-4 py-3 rounded-2xl font-semibold">
+                    {error}
+                </div>
+            )}
 
             <div className="bg-white rounded-3xl border border-zinc-200 p-6">
                 <div className="flex flex-col lg:flex-row gap-4 mb-6">
@@ -159,170 +188,162 @@ export default function TeamPage() {
                     </div>
                 </div>
 
-                <table className="w-full">
-                    <thead>
-                        <tr className="border-b border-zinc-200">
-                            <th className="text-left py-4 px-3 text-sm font-semibold text-zinc-500">
-                                Name
-                            </th>
-                            <th className="text-left py-4 px-3 text-sm font-semibold text-zinc-500">
-                                Email
-                            </th>
-                            <th className="text-left py-4 px-3 text-sm font-semibold text-zinc-500">
-                                Role
-                            </th>
-                            <th className="text-left py-4 px-3 text-sm font-semibold text-zinc-500">
-                                Status
-                            </th>
-                            <th className="text-right py-4 px-3 text-sm font-semibold text-zinc-500">
-                                Actions
-                            </th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        {filteredTeamMembers.map((member) => (
-                            <tr
-                                key={member.id}
-                                className="border-b border-zinc-100 last:border-b-0 hover:bg-zinc-50 transition"
-                            >
-                                <td className="py-5 px-3 font-semibold text-zinc-900">
-                                    {member.name}
-                                </td>
-
-                                <td className="py-5 px-3 text-zinc-500">
-                                    {member.email}
-                                </td>
-
-                                <td className="py-5 px-3">
-                                    <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm font-semibold">
-                                        {member.role}
-                                    </span>
-                                </td>
-
-                                <td className="py-5 px-3">
-                                    <span
-                                        className={`px-3 py-1 rounded-full text-sm font-semibold ${member.status === "Active"
-                                            ? "bg-green-50 text-green-600"
-                                            : "bg-zinc-100 text-zinc-500"
-                                            }`}
-                                    >
-                                        {member.status}
-                                    </span>
-                                </td>
-
-                                <td className="py-5 px-3">
-                                    <div className="flex justify-end gap-2">
-                                        <button
-                                            onClick={() => openEditModal(member)}
-                                            className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-xl font-semibold transition hover:cursor-pointer"
-                                        >
-                                            Edit
-                                        </button>
-
-                                        <button
-                                            onClick={() =>
-                                                handleDeleteMember(member.id)
-                                            }
-                                            className="bg-red-50 hover:bg-red-100 text-red-500 px-4 py-2 rounded-xl font-semibold transition hover:cursor-pointer"
-                                        >
-                                            Delete
-                                        </button>
-                                    </div>
-                                </td>
+                {isLoading ? (
+                    <p className="text-zinc-500">Loading team members...</p>
+                ) : (
+                    <table className="w-full">
+                        <thead>
+                            <tr className="border-b border-zinc-200">
+                                <th className="text-left py-4 px-3 text-sm font-semibold text-zinc-500">
+                                    Name
+                                </th>
+                                <th className="text-left py-4 px-3 text-sm font-semibold text-zinc-500">
+                                    Username
+                                </th>
+                                <th className="text-left py-4 px-3 text-sm font-semibold text-zinc-500">
+                                    Role
+                                </th>
+                                <th className="text-left py-4 px-3 text-sm font-semibold text-zinc-500">
+                                    Status
+                                </th>
+                                <th className="text-right py-4 px-3 text-sm font-semibold text-zinc-500">
+                                    Actions
+                                </th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+
+                        <tbody>
+                            {filteredTeamMembers.map((member) => (
+                                <tr
+                                    key={member.id}
+                                    className="border-b border-zinc-100 last:border-b-0 hover:bg-zinc-50 transition"
+                                >
+                                    <td className="py-5 px-3 font-semibold text-zinc-900">
+                                        {member.name}
+                                    </td>
+
+                                    <td className="py-5 px-3 text-zinc-500">
+                                        {member.username}
+                                    </td>
+
+                                    <td className="py-5 px-3">
+                                        <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm font-semibold">
+                                            {member.role === "ADMIN"
+                                                ? "Admin"
+                                                : "Staff"}
+                                        </span>
+                                    </td>
+
+                                    <td className="py-5 px-3">
+                                        <span
+                                            className={`px-3 py-1 rounded-full text-sm font-semibold ${member.active
+                                                ? "bg-green-50 text-green-600"
+                                                : "bg-zinc-100 text-zinc-500"
+                                                }`}
+                                        >
+                                            {member.active
+                                                ? "Active"
+                                                : "Inactive"}
+                                        </span>
+                                    </td>
+
+                                    <td className="py-5 px-3">
+                                        <div className="flex justify-end gap-2">
+                                            <button
+                                                onClick={() =>
+                                                    openEditModal(member)
+                                                }
+                                                className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-xl font-semibold transition hover:cursor-pointer"
+                                            >
+                                                Edit
+                                            </button>
+
+                                            <button
+                                                onClick={() =>
+                                                    handleDeleteMember(member.id)
+                                                }
+                                                className="bg-red-50 hover:bg-red-100 text-red-500 px-4 py-2 rounded-xl font-semibold transition hover:cursor-pointer"
+                                            >
+                                                Deactivate
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
             </div>
 
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
                     <div className="bg-white rounded-3xl p-6 w-full max-w-xl">
                         <h2 className="text-2xl font-bold text-zinc-900 mb-6">
-                            {editingMember ? "Edit Team Member" : "Add Team Member"}
+                            {editingMember
+                                ? "Edit Team Member"
+                                : "Add Team Member"}
                         </h2>
 
                         <div className="space-y-5">
-                            <div>
-                                <label className="block text-sm font-semibold text-zinc-600 mb-2">
-                                    Full Name
-                                </label>
+                            <input
+                                type="text"
+                                placeholder="Full name"
+                                value={formData.name}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        name: e.target.value,
+                                    })
+                                }
+                                className="w-full bg-zinc-100 border border-zinc-200 rounded-2xl px-4 py-3 outline-none focus:border-blue-500"
+                            />
 
+                            {!editingMember && (
                                 <input
-                                    type="text"
-                                    placeholder="Enter full name"
-                                    value={formData.name}
+                                    type="password"
+                                    placeholder="Temporary password"
+                                    value={formData.password}
                                     onChange={(e) =>
                                         setFormData({
                                             ...formData,
-                                            name: e.target.value,
+                                            password: e.target.value,
                                         })
                                     }
                                     className="w-full bg-zinc-100 border border-zinc-200 rounded-2xl px-4 py-3 outline-none focus:border-blue-500"
                                 />
-                            </div>
+                            )}
 
-                            <div>
-                                <label className="block text-sm font-semibold text-zinc-600 mb-2">
-                                    Email Address
-                                </label>
+                            <select
+                                value={formData.role}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        role: e.target.value as
+                                            | "Admin"
+                                            | "Staff",
+                                    })
+                                }
+                                className="w-full bg-zinc-100 border border-zinc-200 rounded-2xl px-4 py-3 outline-none focus:border-blue-500"
+                            >
+                                <option value="Admin">Admin</option>
+                                <option value="Staff">Staff</option>
+                            </select>
 
-                                <input
-                                    type="email"
-                                    placeholder="Enter email address"
-                                    value={formData.email}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            email: e.target.value,
-                                        })
-                                    }
-                                    className="w-full bg-zinc-100 border border-zinc-200 rounded-2xl px-4 py-3 outline-none focus:border-blue-500"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-semibold text-zinc-600 mb-2">
-                                    Role
-                                </label>
-
-                                <select
-                                    value={formData.role}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            role: e.target.value as "Admin" | "Staff",
-                                        })
-                                    }
-                                    className="w-full bg-zinc-100 border border-zinc-200 rounded-2xl px-4 py-3 outline-none focus:border-blue-500"
-                                >
-                                    <option value="Admin">Admin</option>
-                                    <option value="Staff">Staff</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-semibold text-zinc-600 mb-2">
-                                    Account Status
-                                </label>
-
-                                <select
-                                    value={formData.status}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            status: e.target.value as
-                                                | "Active"
-                                                | "Inactive",
-                                        })
-                                    }
-                                    className="w-full bg-zinc-100 border border-zinc-200 rounded-2xl px-4 py-3 outline-none focus:border-blue-500"
-                                >
-                                    <option value="Active">Active</option>
-                                    <option value="Inactive">Inactive</option>
-                                </select>
-                            </div>
+                            <select
+                                value={formData.status}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        status: e.target.value as
+                                            | "Active"
+                                            | "Inactive",
+                                    })
+                                }
+                                className="w-full bg-zinc-100 border border-zinc-200 rounded-2xl px-4 py-3 outline-none focus:border-blue-500"
+                            >
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
                         </div>
 
                         <div className="flex justify-end gap-3 mt-6">

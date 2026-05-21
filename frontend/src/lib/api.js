@@ -121,3 +121,63 @@ export async function deleteProduct(id) {
     const data = await handleResponse(response);
     return data.product;
 }
+
+export async function fetchTeamMembers() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/team`);
+
+        const data = await handleResponse(response);
+
+        return data.users ?? data;
+    } catch (error) {
+        console.error("fetchTeamMembers error:", error);
+        throw error;
+    }
+}
+
+export async function createTeamMember(teamMemberData) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/team`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(teamMemberData),
+        });
+
+        return await handleResponse(response);
+    } catch (error) {
+        console.error("createTeamMember error:", error);
+        throw error;
+    }
+}
+
+export async function updateTeamMember(id, teamMemberData) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/team/${id}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(teamMemberData),
+        });
+
+        return await handleResponse(response);
+    } catch (error) {
+        console.error("updateTeamMember error:", error);
+        throw error;
+    }
+}
+
+export async function deleteTeamMember(id) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/team/${id}`, {
+            method: "DELETE",
+        });
+
+        return await handleResponse(response);
+    } catch (error) {
+        console.error("deleteTeamMember error:", error);
+        throw error;
+    }
+}
