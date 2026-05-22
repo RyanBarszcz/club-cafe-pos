@@ -7,12 +7,12 @@ import adminRoutes from "./routes/admin.routes.js";
 import teamRoutes from "./routes/team.routes.js";
 import settingsRoutes from './routes/settings.routes.js';
 import { clerkMiddleware } from "@clerk/express";
-
-
+import { globalLimiter } from "./middleware/rateLimit.js";
 
 const app = express();
 
 app.use(clerkMiddleware());
+app.use(globalLimiter);
 app.use(cors());
 app.use(express.json());
 
