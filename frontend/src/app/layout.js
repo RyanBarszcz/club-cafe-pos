@@ -16,8 +16,12 @@ export const metadata = {
   title: "Liberty Cafe POS",
   description: "Liberty Athletic Club POS System",
 };
-// ADMIN
-// TODO: Dashboard import data function needs to be created
+
+// ADMIN:
+// TODO: Do protected routes. This will be VERY IMPORTANT!
+// TODO: Make arrows on dashboard items reflect the correct things
+// TODO: Make so other things also do vs last month
+
 
 // TODO: Do pay be membership
 // TODO: Member lookup functionality

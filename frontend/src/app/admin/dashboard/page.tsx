@@ -53,10 +53,6 @@ export default function DashboardPage() {
                     >
                         + Add Product
                     </Link>
-
-                    <button className="border border-blue-900 text-blue-900 px-5 py-3 rounded-full">
-                        Import Data
-                    </button>
                 </div>
             </div>
 

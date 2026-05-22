@@ -6,6 +6,13 @@ type CategoryTabsProps = {
     onSelectCategory: (category: ProductCategory) => void;
 };
 
+function formatCategory(category) {
+    return category
+        .replaceAll("_", " ")
+        .toLowerCase()
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 export default function CategoryTabs({
     categories,
     selectedCategory,
@@ -20,7 +27,7 @@ export default function CategoryTabs({
                         }`}
                     onClick={() => onSelectCategory(category)}
                 >
-                    {category}
+                    {formatCategory(category)}
                 </button>
             ))}
         </div>

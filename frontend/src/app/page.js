@@ -32,7 +32,9 @@ export default function Home() {
     const metadataRole = user.publicMetadata?.role;
 
     if (metadataRole === "admin") return "admin";
-    if (metadataRole === "employee") return "employee";
+    if (metadataRole === "employee" || metadataRole === "staff") {
+      return "employee";
+    }
 
     return "guest";
   }, [isLoaded, isSignedIn, user]);
@@ -87,11 +89,18 @@ export default function Home() {
   }, [isEmployee, products]);
 
   const categories = useMemo(() => {
-    return allCategories.filter((category) => {
-      if (category === "All") return true;
-      return visibleProducts.some((product) => product.category === category);
-    });
+    const productCategories = visibleProducts
+      .map((product) => product.category)
+      .filter(Boolean);
+
+    return ["All", ...new Set(productCategories)];
   }, [visibleProducts]);
+
+  useEffect(() => {
+    if (!categories.includes(selectedCategory)) {
+      setSelectedCategory("All");
+    }
+  }, [categories, selectedCategory]);
 
   const filteredProducts = useMemo(() => {
     return visibleProducts.filter((product) => {
@@ -150,15 +159,28 @@ export default function Home() {
     <main className="kiosk-page">
       <section className="kiosk-shell">
         <div className="kiosk-main">
-          <header className="kiosk-topbar">
+          <header className="mb-8 flex w-full items-center gap-4 shrink-0">
             <input
-              className="search-input"
+              className="h-[72px] min-w-0 flex-1 rounded-lg border-none bg-white px-5 text-2xl text-[#080133] outline-none placeholder:text-[#b3b4bb]"
               placeholder="Search all products here..."
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
             />
 
-            <button className="search-button">Search</button>
+            <button className="h-[72px] shrink-0 rounded-lg bg-[#0277fa] px-10 text-2xl font-semibold text-white transition hover:bg-blue-600">
+              Search
+            </button>
+
+            {role === "admin" && (
+              <button
+                onClick={() => {
+                  window.location.href = "/admin/dashboard";
+                }}
+                className="hover:cursor-pointer h-[72px] shrink-0 rounded-lg bg-[#080133] px-8 text-lg font-bold text-white transition hover:bg-zinc-800"
+              >
+                Admin
+              </button>
+            )}
           </header>
 
           <CategoryTabs

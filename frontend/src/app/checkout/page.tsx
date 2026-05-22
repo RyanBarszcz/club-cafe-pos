@@ -9,6 +9,7 @@ import {
 
 import { CartItem } from "../../lib/types";
 import { createTransaction } from "../../lib/api";
+import MemberLookupModal from "../../components/checkout/MemberLookupModal";
 
 export default function CheckoutPage() {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -20,6 +21,7 @@ export default function CheckoutPage() {
     const [isCustomDiscountActive, setIsCustomDiscountActive] =
         useState(false);
     const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+    const [isMemberLookupOpen, setIsMemberLookupOpen] = useState(false);
 
 
     useEffect(() => {
@@ -84,6 +86,34 @@ export default function CheckoutPage() {
             await createTransaction({
                 mode: "KIOSK",
                 paymentMethod: "CARD",
+                items: cartItems
+                    .filter((item) => !item.isComped)
+                    .map((item) => ({
+                        productId: item.id,
+                        quantity: item.quantity,
+                    })),
+            });
+
+            localStorage.removeItem("currentCart");
+            setCartItems([]);
+
+            window.location.href = "/";
+        } catch (error) {
+            console.error(error);
+            setIsProcessingPayment(false);
+        }
+    }
+
+    async function handleChargeToAccount(member: { id: string }) {
+        if (cartItems.length === 0) return;
+
+        try {
+            setIsProcessingPayment(true);
+
+            await createTransaction({
+                mode: "STAFF",
+                paymentMethod: "CHARGE_TO_ACCOUNT",
+                memberId: member.id,
                 items: cartItems
                     .filter((item) => !item.isComped)
                     .map((item) => ({
@@ -195,7 +225,10 @@ export default function CheckoutPage() {
                         </div>
 
                         <div className="checkout-payment-options">
-                            <button className="checkout-pay-option primary">
+                            <button
+                                onClick={() => setIsMemberLookupOpen(true)}
+                                disabled={cartItems.length === 0}
+                                className="checkout-pay-option primary">
                                 <MdAccountBalance />
                                 Charge to Account
                             </button>
@@ -260,6 +293,7 @@ export default function CheckoutPage() {
                         )}
                     </aside>
                 </section>
+                {/* Discount Modal */}
                 {isCustomDiscountModalOpen && (
                     <div className="modal-backdrop">
                         <div className="custom-discount-modal">
@@ -303,6 +337,15 @@ export default function CheckoutPage() {
                             </div>
                         </div>
                     </div>
+                )}
+
+                {/* Member Lookup Modal */}
+                {isMemberLookupOpen && (
+                    <MemberLookupModal
+                        total={total}
+                        onClose={() => setIsMemberLookupOpen(false)}
+                        onConfirmCharge={handleChargeToAccount}
+                    />
                 )}
             </main>
             {isProcessingPayment && (

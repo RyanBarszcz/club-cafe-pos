@@ -90,10 +90,21 @@ export default function AdminSidebar() {
                     </Link>
                 </div>
             </div>
+            <div>
+                <Link
+                    href="/"
+                    className="w-full flex items-center justify-center px-4 py-3 rounded-2xl bg-zinc-900 text-white font-semibold hover:bg-zinc-700 transition mb-3 hover:cursor-pointer"
+                >
+                    Return to POS
+                </Link>
 
-            <button className="w-full text-left px-4 py-3 rounded-2xl text-red-500 hover:bg-red-50 font-semibold hover:cursor-pointer transition">
-                Logout
-            </button>
+                <button className="w-full flex items-center justify-center px-4 py-3 rounded-2xl bg-red-700 text-white font-semibold hover:bg-zinc-700 transition mb-3 hover:cursor-pointer">
+                    Logout
+                </button>
+
+            </div>
+
+
         </aside>
     );
 }
