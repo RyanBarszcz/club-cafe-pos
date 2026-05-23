@@ -112,6 +112,10 @@ export async function getTeamMembers(req: Request, res: Response) {
 export async function updateTeamMember(req: Request, res: Response) {
   try {
     const { id } = req.params;
+
+    if (typeof id !== "string") {
+      return res.status(400).json({ message: "Invalid product id" });
+    }
     const { name, role, active } = req.body;
 
     const existingUser = await prisma.user.findUnique({
@@ -164,6 +168,10 @@ export async function updateTeamMember(req: Request, res: Response) {
 export async function deleteTeamMember(req: Request, res: Response) {
   try {
     const { id } = req.params;
+
+    if (typeof id !== "string") {
+      return res.status(400).json({ message: "Invalid product id" });
+    }
 
     const existingUser = await prisma.user.findUnique({
       where: { id },

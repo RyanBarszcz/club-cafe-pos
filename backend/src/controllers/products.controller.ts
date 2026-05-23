@@ -64,8 +64,14 @@ export async function updateProduct(req: Request, res: Response) {
             });
         }
 
+        const { id } = req.params;
+
+        if (typeof id !== "string") {
+            return res.status(400).json({ message: "Invalid product id" });
+        }
+
         const product = await prisma.product.update({
-            where: { id: req.params.id },
+            where: { id },
             data: {
                 ...parsed.data,
                 description: parsed.data.description ?? undefined,
@@ -82,8 +88,15 @@ export async function updateProduct(req: Request, res: Response) {
 
 export async function deleteProduct(req: Request, res: Response) {
     try {
+
+        const { id } = req.params;
+
+        if (typeof id !== "string") {
+            return res.status(400).json({ message: "Invalid product id" });
+        }
+
         const product = await prisma.product.update({
-            where: { id: req.params.id },
+            where: { id },
             data: { active: false },
         });
 
