@@ -279,4 +279,3 @@ The goal was not only to build a visually modern POS system, but also to practic
 Ryan Barszcz
 
 * Portfolio: [https://ryanbarszcz.com](https://ryanbarszcz.com)
-* GitHub:
