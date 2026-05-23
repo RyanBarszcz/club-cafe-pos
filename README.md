@@ -78,6 +78,8 @@ The system supports multiple user experiences:
 
 ## Admin Dashboard
 
+![Dash Preview](./assets/dash-prev.png)
+
 * Sales analytics
 * Product management
 * Team management
@@ -87,6 +89,8 @@ The system supports multiple user experiences:
 
 ## Product Management
 
+![Products Preview](./assets/products-prev.png)
+
 * Create/edit products
 * Enable/disable kiosk visibility
 * Inventory count tracking
@@ -95,6 +99,8 @@ The system supports multiple user experiences:
 
 ## Transactions
 
+![Transactions Preview](./assets/transactions-prev.png)
+
 * Staff checkout flow
 * Kiosk checkout flow
 * Charge-to-member-account support
@@ -102,6 +108,8 @@ The system supports multiple user experiences:
 * Tax + subtotal calculations
 
 ## Team Management
+
+![Team Preview](./assets/team-prev.png)
 
 * Admin/staff role separation
 * Team directory
