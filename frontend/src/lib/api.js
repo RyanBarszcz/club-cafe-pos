@@ -15,6 +15,14 @@ async function handleResponse(response) {
     return response.json();
 }
 
+function authHeaders(token) {
+    // console.log("Auth token:", token);
+    return {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+}
+
 export async function fetchProducts() {
     try {
         const response = await fetch(`${API_BASE_URL}/products`);
@@ -32,9 +40,7 @@ export async function createTransaction(transactionData) {
     try {
         const response = await fetch(`${API_BASE_URL}/transactions`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify(transactionData),
         });
 
@@ -50,7 +56,7 @@ export async function fetchTransactions({
     limit = 20,
     sortBy = "createdAt",
     sortOrder = "desc",
-}) {
+}, token) {
     try {
         const params = new URLSearchParams({
             page: String(page),
@@ -59,7 +65,9 @@ export async function fetchTransactions({
             sortOrder,
         });
 
-        const response = await fetch(`${API_BASE_URL}/transactions?${params}`);
+        const response = await fetch(`${API_BASE_URL}/transactions?${params}`, {
+            headers: authHeaders(token),
+        });
 
         return await handleResponse(response);
     } catch (error) {
@@ -68,10 +76,12 @@ export async function fetchTransactions({
     }
 }
 
-export async function fetchProductAnalytics(range) {
+export async function fetchProductAnalytics(range, token) {
     try {
         const response = await fetch(
-            `${API_BASE_URL}/analytics/products?range=${range}`
+            `${API_BASE_URL}/analytics/products?range=${range}`,{
+                headers: authHeaders(token),
+            }
         );
 
         return await handleResponse(response);
@@ -81,9 +91,11 @@ export async function fetchProductAnalytics(range) {
     }
 }
 
-export async function fetchAdminDashboard() {
+export async function fetchAdminDashboard(token) {
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/dashboard`);
+    const response = await fetch(`${API_BASE_URL}/admin/dashboard`, {
+        headers: authHeaders(token),
+    });
 
     return await handleResponse(response);
   } catch (error) {
@@ -105,13 +117,11 @@ export async function fetchAdminProducts() {
     }
 }
 
-export async function createProduct(productData) {
+export async function createProduct(productData, token) {
     try {
         const response = await fetch(`${API_BASE_URL}/products`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers: authHeaders(token),
             body: JSON.stringify(productData),
         });
 
@@ -123,12 +133,10 @@ export async function createProduct(productData) {
     }
 }
 
-export async function updateProduct(id, productData) {
+export async function updateProduct(id, productData, token) {
     const response = await fetch(`${API_BASE_URL}/products/${id}`, {
         method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-        },
+        headers: authHeaders(token),
         body: JSON.stringify(productData),
     });
 
@@ -136,18 +144,21 @@ export async function updateProduct(id, productData) {
     return data.product;
 }
 
-export async function deleteProduct(id) {
+export async function deleteProduct(id, token) {
     const response = await fetch(`${API_BASE_URL}/products/${id}`, {
         method: "DELETE",
+        headers: authHeaders(token),
     });
 
     const data = await handleResponse(response);
     return data.product;
 }
 
-export async function fetchTeamMembers() {
+export async function fetchTeamMembers(token) {
     try {
-        const response = await fetch(`${API_BASE_URL}/team`);
+        const response = await fetch(`${API_BASE_URL}/team`, {
+            headers: authHeaders(token),
+        });
 
         const data = await handleResponse(response);
 
@@ -158,13 +169,11 @@ export async function fetchTeamMembers() {
     }
 }
 
-export async function createTeamMember(teamMemberData) {
+export async function createTeamMember(teamMemberData, token) {
     try {
         const response = await fetch(`${API_BASE_URL}/team`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers: authHeaders(token),
             body: JSON.stringify(teamMemberData),
         });
 
@@ -175,13 +184,11 @@ export async function createTeamMember(teamMemberData) {
     }
 }
 
-export async function updateTeamMember(id, teamMemberData) {
+export async function updateTeamMember(id, teamMemberData, token) {
     try {
         const response = await fetch(`${API_BASE_URL}/team/${id}`, {
             method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers: authHeaders(token),
             body: JSON.stringify(teamMemberData),
         });
 
@@ -192,10 +199,11 @@ export async function updateTeamMember(id, teamMemberData) {
     }
 }
 
-export async function deleteTeamMember(id) {
+export async function deleteTeamMember(id, token) {
     try {
         const response = await fetch(`${API_BASE_URL}/team/${id}`, {
             method: "DELETE",
+            headers: authHeaders(token)
         });
 
         return await handleResponse(response);
@@ -205,17 +213,17 @@ export async function deleteTeamMember(id) {
     }
 }
 
-export async function fetchSettings() {
-    const response = await fetch(`${API_BASE_URL}/settings`);
+export async function fetchSettings(token) {
+    const response = await fetch(`${API_BASE_URL}/settings`, {
+        headers: authHeaders(token),
+    });
     return await handleResponse(response);
 }
 
-export async function updateSettings(settingsData) {
+export async function updateSettings(settingsData, token) {
     const response = await fetch(`${API_BASE_URL}/settings`, {
         method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-        },
+        headers: authHeaders(token),
         body: JSON.stringify(settingsData),
     });
 

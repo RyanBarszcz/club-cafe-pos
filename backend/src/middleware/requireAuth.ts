@@ -5,7 +5,8 @@ export function requireAuth(
   res: Response,
   next: NextFunction
 ) {
-  const auth = (req as any).auth;
+  
+  const auth = (req as any).auth();
 
   if (!auth?.userId) {
     return res.status(401).json({

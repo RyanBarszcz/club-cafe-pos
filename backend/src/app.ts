@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import cors from "cors";
 import productsRoutes from "./routes/products.routes.js";
@@ -22,6 +25,8 @@ app.get("/health", (_req, res) => {
     message: "Liberty POS backend is running",
   });
 });
+
+// console.log(process.env.CLERK_PUBLISHABLE_KEY);
 
 app.use("/products", productsRoutes);
 app.use("/transactions", transactionsRoutes);

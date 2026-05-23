@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { fetchTransactions } from "../../../lib/api";
 import TransactionDetailsModal from "../../../components/admin/TransactionDetailModal";
+import { useAuth } from "@clerk/nextjs";
 
 // TODO: Later
 // Add refund capability if by card.
@@ -52,32 +53,36 @@ export default function TransactionsPage() {
     const [error, setError] = useState("");
     const [selectedTransaction, setSelectedTransaction] =
         useState<Transaction | null>(null);
+    const { getToken } = useAuth();
 
     useEffect(() => {
-        loadTransactions();
-    }, [page, sortBy, sortOrder]);
+        async function loadTransactions() {
+            try {
+                setIsLoading(true);
+                setError("");
 
-    async function loadTransactions() {
-        try {
-            setIsLoading(true);
-            setError("");
+                const token = await getToken({ template: "pos-admin" });
 
-            const data = await fetchTransactions({
-                page,
-                limit: 20,
-                sortBy,
-                sortOrder,
-            });
+                const data = await fetchTransactions({
+                    page,
+                    limit: 20,
+                    sortBy,
+                    sortOrder,
+                }, token);
 
-            setTransactions(data.transactions);
-            setPagination(data.pagination);
-        } catch (error) {
-            console.error(error);
-            setError("Failed to load transactions");
-        } finally {
-            setIsLoading(false);
+                setTransactions(data.transactions);
+                setPagination(data.pagination);
+            } catch (error) {
+                console.error(error);
+                setError("Failed to load transactions");
+            } finally {
+                setIsLoading(false);
+            }
         }
-    }
+        loadTransactions();
+    }, [page, sortBy, sortOrder, getToken]);
+
+
 
     function handleSort(field: string) {
         if (sortBy === field) {

@@ -6,7 +6,7 @@ import { adminLimiter, transactionLimiter } from "../middleware/rateLimit.js";
 
 const router = Router();
 
-router.post("/", requireAuth, transactionLimiter, createTransaction);
+router.post("/", transactionLimiter, createTransaction);
 router.get("/", requireAuth, requireAdmin, adminLimiter, getTransactions);
 
 export default router;

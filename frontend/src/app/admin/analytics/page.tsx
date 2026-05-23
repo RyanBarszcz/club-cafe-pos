@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import DashboardStatCard from "../../../components/admin/DashboardStatCard";
 import { fetchProductAnalytics } from "../../../lib/api";
+import { useAuth } from "@clerk/nextjs";
 
 const ranges = ["Daily", "Weekly", "Monthly", "YTD"] as const;
 const categories = ["All", "Drinks", "Hot Food", "Snacks", "Merch"] as const;
@@ -43,14 +44,16 @@ export default function AnalyticsPage() {
     const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
     const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const { getToken } = useAuth();
 
     useEffect(() => {
         async function loadAnalytics() {
             try {
                 setIsLoading(true);
+                const token = await getToken({ template: "pos-admin" });
 
                 const data = await fetchProductAnalytics(
-                    rangeToApi[selectedRange]
+                    rangeToApi[selectedRange], token
                 );
 
                 setAnalytics(data);

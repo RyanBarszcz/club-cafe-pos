@@ -8,7 +8,7 @@ export default function StaffLoginPage() {
     const { isLoaded, isSignedIn } = useUser();
     const router = useRouter();
 
-    console.log(isSignedIn);
+    // console.log(isSignedIn);
 
     useEffect(() => {
         if (isLoaded && isSignedIn) {

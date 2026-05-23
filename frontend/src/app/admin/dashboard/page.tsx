@@ -4,18 +4,43 @@ import { useEffect, useMemo, useState } from "react";
 import DashboardStatCard from "../../../components/admin/DashboardStatCard";
 import Link from "next/link";
 import { fetchAdminDashboard } from "../../../lib/api";
+import { useAuth, useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
+    const router = useRouter();
+    const { isLoaded, isSignedIn, user } = useUser();
+
     const [dashboard, setDashboard] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const salesChangePercent = dashboard?.summary?.salesChangePercent ?? 0;
-    const isSalesIncrease = salesChangePercent >= 0;
+    const { getToken } = useAuth();
+
+    const isAdmin = user?.publicMetadata?.role === "admin";
 
     useEffect(() => {
+        if (!isLoaded) return;
+
+        if (!isSignedIn || !isAdmin) {
+            router.replace("/");
+        }
+    }, [isLoaded, isSignedIn, isAdmin, router]);
+
+    useEffect(() => {
+        if (!isLoaded || !isSignedIn || !isAdmin) return;
+
         async function loadDashboard() {
             try {
                 setIsLoading(true);
-                const data = await fetchAdminDashboard();
+                const token = await getToken({ template: "pos-admin" });
+                if (!token) {
+                    console.error("No Clerk token found");
+                    return;
+                }
+                // console.log("PUBLIC METADATA:", user?.publicMetadata);
+                // console.log("TOKEN:", token);
+                // console.log("SIGNED IN:", isSignedIn);
+                // console.log("USER:", user);
+                const data = await fetchAdminDashboard(token);
                 setDashboard(data);
             } catch (error) {
                 console.error(error);
@@ -25,7 +50,10 @@ export default function DashboardPage() {
         }
 
         loadDashboard();
-    }, []);
+    }, [isLoaded, isSignedIn, isAdmin]);
+
+    const salesChangePercent = dashboard?.summary?.salesChangePercent ?? 0;
+    const isSalesIncrease = salesChangePercent >= 0;
 
     const maxWeeklyRevenue = useMemo(() => {
         if (!dashboard?.weeklySales?.length) return 1;
@@ -35,6 +63,10 @@ export default function DashboardPage() {
             1
         );
     }, [dashboard]);
+
+    if (!isLoaded || !isSignedIn || !isAdmin) {
+        return null;
+    }
 
     return (
         <div className="max-w-7xl mx-auto">

@@ -18,7 +18,7 @@ export const metadata = {
 };
 
 // ADMIN:
-// TODO: Do protected routes. This will be VERY IMPORTANT!
+// Protect routes: add tokens to api calls
 // TODO: Make arrows on dashboard items reflect the correct things
 // TODO: Make so other things also do vs last month
 

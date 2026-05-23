@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { fetchSettings, updateSettings } from "../../../lib/api";
+import { useAuth } from "@clerk/nextjs";
 
 type Settings = {
     cafeName: string;
@@ -27,6 +28,7 @@ export default function SettingsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState("");
+    const { getToken } = useAuth();
 
     useEffect(() => {
         loadSettings();
@@ -37,7 +39,9 @@ export default function SettingsPage() {
             setIsLoading(true);
             setMessage("");
 
-            const data = await fetchSettings();
+            const token = await getToken({ template: "pos-admin" });
+
+            const data = await fetchSettings(token);
 
             setSettings({
                 cafeName: data.cafeName,
@@ -68,6 +72,8 @@ export default function SettingsPage() {
             setIsSaving(true);
             setMessage("");
 
+            const token = await getToken({ template: "pos-admin" });
+
             const savedSettings = await updateSettings({
                 cafeName: settings.cafeName,
                 taxRate: Number(settings.taxRate),
@@ -76,7 +82,7 @@ export default function SettingsPage() {
                 requireManagerApproval: settings.requireManagerApproval,
                 lowStockThreshold: Number(settings.lowStockThreshold),
                 requirePinForDiscounts: settings.requirePinForDiscounts,
-            });
+            }, token);
 
             setSettings({
                 cafeName: savedSettings.cafeName,

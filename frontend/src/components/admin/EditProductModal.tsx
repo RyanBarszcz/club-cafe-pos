@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { updateProduct } from "../../lib/api";
+import { useAuth } from "@clerk/nextjs";
 
 const categories = [
     { label: "Drinks", value: "DRINKS" },
@@ -35,12 +36,14 @@ export default function EditProductModal({
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { getToken } = useAuth();
 
     async function handleSubmit(event: React.FormEvent) {
         event.preventDefault();
 
         try {
             setIsSubmitting(true);
+            const token = await getToken({ template: "pos-admin" });
 
             const updatedProduct = await updateProduct(product.id, {
                 name: formData.name.trim(),
@@ -51,7 +54,7 @@ export default function EditProductModal({
                 lowStockThreshold: Number(formData.lowStockThreshold),
                 isHotFood: formData.isHotFood,
                 isSelfServeEnabled: formData.isSelfServeEnabled,
-            });
+            }, token);
 
             onProductUpdated(updatedProduct);
         } catch (error) {

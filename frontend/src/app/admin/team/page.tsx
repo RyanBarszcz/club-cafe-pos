@@ -7,6 +7,7 @@ import {
     updateTeamMember,
     deleteTeamMember,
 } from "../../../lib/api";
+import { useAuth } from "@clerk/nextjs";
 
 type TeamMember = {
     id: string;
@@ -32,11 +33,13 @@ export default function TeamPage() {
         role: "Staff" as "Admin" | "Staff",
         status: "Active" as "Active" | "Inactive",
     });
+    const { getToken } = useAuth();
 
     async function loadTeamMembers() {
         try {
             setIsLoading(true);
-            const users = await fetchTeamMembers();
+            const token = await getToken({ template: "pos-admin" });
+            const users = await fetchTeamMembers(token);
             setTeamMembers(users);
         } catch (error) {
             console.error(error);
@@ -91,12 +94,14 @@ export default function TeamPage() {
         try {
             if (!formData.name) return;
 
+            const token = await getToken({ template: "pos-admin" });
+
             if (editingMember) {
                 const updatedMember = await updateTeamMember(editingMember.id, {
                     name: formData.name,
                     role: formData.role,
                     active: formData.status === "Active",
-                });
+                }, token);
 
                 setTeamMembers((prev) =>
                     prev.map((member) =>
@@ -106,12 +111,14 @@ export default function TeamPage() {
             } else {
                 if (!formData.password) return;
 
+                const token = await getToken({ template: "pos-admin" });
+
                 const newMember = await createTeamMember({
                     name: formData.name,
                     password: formData.password,
                     role: formData.role,
                     status: formData.status,
-                });
+                }, token);
 
                 setTeamMembers((prev) => [newMember, ...prev]);
             }
@@ -125,7 +132,8 @@ export default function TeamPage() {
 
     async function handleDeleteMember(id: string) {
         try {
-            const updatedMember = await deleteTeamMember(id);
+            const token = await getToken({ template: "pos-admin" });
+            const updatedMember = await deleteTeamMember(id, token);
 
             setTeamMembers((prev) =>
                 prev.map((member) =>

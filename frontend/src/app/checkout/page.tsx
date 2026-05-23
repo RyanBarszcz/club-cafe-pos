@@ -10,6 +10,7 @@ import {
 import { CartItem } from "../../lib/types";
 import { createTransaction } from "../../lib/api";
 import MemberLookupModal from "../../components/checkout/MemberLookupModal";
+import { useAuth } from "@clerk/nextjs";
 
 export default function CheckoutPage() {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -22,6 +23,7 @@ export default function CheckoutPage() {
         useState(false);
     const [isProcessingPayment, setIsProcessingPayment] = useState(false);
     const [isMemberLookupOpen, setIsMemberLookupOpen] = useState(false);
+    const { getToken } = useAuth();
 
 
     useEffect(() => {

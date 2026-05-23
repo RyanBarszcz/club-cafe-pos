@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { fetchAdminProducts, deleteProduct } from "../../lib/api";
 import ProductStatusBadges from "./ProductStatusBadges";
 import EditProductModal from "./EditProductModal";
+import { useAuth } from "@clerk/nextjs";
 
 
 // const categories = [
@@ -25,6 +26,7 @@ export default function ProductTable({ refreshKey = 0 }: ProductTableProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [productToDelete, setProductToDelete] = useState(null);
     const [productToEdit, setProductToEdit] = useState(null);
+    const { getToken } = useAuth();
 
     useEffect(() => {
         async function loadProducts() {
@@ -262,7 +264,8 @@ export default function ProductTable({ refreshKey = 0 }: ProductTableProps) {
 
                             <button
                                 onClick={async () => {
-                                    await deleteProduct(productToDelete.id);
+                                    const token = await getToken({ template: "pos-admin" });
+                                    await deleteProduct(productToDelete.id, token);
 
                                     setProducts((currentProducts) =>
                                         currentProducts.filter(
