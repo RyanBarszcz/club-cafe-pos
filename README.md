@@ -1,5 +1,7 @@
 # Liberty POS
 
+![Liberty POS Banner](./assets/preview.png)
+
 A modern full-stack cafe and checkout system inspired by real workflows at Liberty Athletic Club.
 
 Liberty POS is designed to modernize athletic club cafe operations through a clean kiosk experience, staff/admin management tools, inventory tracking, role-based authentication, analytics, and member account charging.
